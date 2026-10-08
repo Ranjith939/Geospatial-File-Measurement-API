@@ -3,9 +3,9 @@
     validate -> extract -> parse -> detect CRS -> validate geometry -> select measurement CRS
              -> transform -> measure -> store
 
-Processing runs synchronously inside the upload request. Each stage's real duration is recorded and
-the file's status column follows the stage being run, so clients see exactly what happened. Every
-per-feature step is isolated: any single feature may fail without affecting the others.
+Everything runs inside the upload request, no background jobs. I record how long each stage really
+took and keep the file's status on whatever stage is running, so clients can see exactly what
+happened. Every per-feature step runs on its own, so if one feature fails the others carry on.
 """
 
 import logging
@@ -74,7 +74,7 @@ class Work:
     raw: RawFeature
     geom: BaseGeometry | None = None  # 2D source geometry
     kind: str = "none"  # area | length | none | unsupported
-    display: BaseGeometry | None = None  # WGS84, or source coordinates when the CRS is unusable
+    display: BaseGeometry | None = None  # WGS84, or the raw source coordinates if we can't use the CRS
     wgs84: BaseGeometry | None = None
     mcrs: CRS | None = None
     projected: BaseGeometry | None = None
@@ -91,7 +91,7 @@ class Work:
 
 
 def process_upload(upload: Path, original_name: str, file_type: str, is_sample: bool = False) -> GeoFile:
-    """Validate, process and store one upload. Raises ValidationFailed before anything is stored."""
+    """Validates, processes and saves one upload. If validation fails it raises ValidationFailed before we save anything."""
     clock = StageClock()
     started = time.perf_counter()
     with tempfile.TemporaryDirectory(prefix="geomeasure-") as work_dir:
@@ -185,7 +185,7 @@ def _detect_crs(geo_file: GeoFile, works: list[Work], warnings: list[str]) -> No
 
 
 def _isolated(w: Work, step, file_id: int) -> None:
-    """Run one feature's step; any exception becomes that feature's error, never the file's."""
+    """Runs one step for one feature. If it throws, the error goes on that feature only, not the whole file."""
     try:
         step(w)
     except Exception as exc:

@@ -1,9 +1,9 @@
-"""Shared pytest fixtures for the unit/API suites (the browser suite adds its own in e2e/)."""
+"""Fixtures I share across the unit and API tests. The browser tests have their own in e2e/."""
 import os
 
 import pytest
 
-# Let the ORM run inside pytest-playwright's sync event loop (browser tests only).
+# I had to allow this so the ORM works inside pytest-playwright's event loop. Only the browser tests need it.
 os.environ.setdefault("DJANGO_ALLOW_ASYNC_UNSAFE", "1")
 
 
@@ -26,7 +26,7 @@ def upload(client, db):
 
 @pytest.fixture
 def measurements(client, upload):
-    """Upload a sample and return (file_json, {feature name or source_id: feature measurement})."""
+    """Uploads a sample and gives back (file_json, {feature name or source_id: feature measurement})."""
     def _m(name: str, content: bytes | None = None):
         r = upload(name, content)
         assert r.status_code == 201, r.content

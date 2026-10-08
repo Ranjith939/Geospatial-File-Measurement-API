@@ -93,6 +93,8 @@ docker/ deploy/        entrypoint, nginx and systemd examples
 
 Requirements: Python 3.12+ (developed on 3.13). Node is **not** required.
 
+Quickest way: `bash run.sh` (or `bash run.sh 8080`). It does the steps below for you and starts the server.
+
 ```bash
 python -m venv .venv
 .venv/Scripts/activate              # Windows   (macOS/Linux: source .venv/bin/activate)

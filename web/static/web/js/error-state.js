@@ -1,4 +1,4 @@
-// Real error states (never generic alerts), keyed by the API's error codes.
+// Proper error screens for each API error code. I didn't want plain generic alerts.
 import { h, icon, enter } from './dom.js'
 
 const COPY = {

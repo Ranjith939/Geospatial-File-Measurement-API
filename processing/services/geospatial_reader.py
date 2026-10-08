@@ -1,7 +1,7 @@
-"""Readers that turn a KML file or a Shapefile into library-neutral `RawFeature`s.
+"""Readers that turn a KML file or a Shapefile into plain `RawFeature`s, not tied to any library.
 
-A feature whose geometry cannot be built is still returned, with `error` set, so one bad
-Placemark or record never takes down the rest of the file.
+If I can't build a feature's geometry I still return it with `error` set. That way one bad
+Placemark or record doesn't break the rest of the file.
 """
 
 import math
@@ -40,7 +40,7 @@ class RawFeature:
     crs: CRS | None
     properties: dict = field(default_factory=dict)
     error: tuple[str, str] | None = None  # (code, message)
-    crs_issue: str | None = None  # MISSING_CRS | INVALID_CRS when crs is None
+    crs_issue: str | None = None  # MISSING_CRS or INVALID_CRS, set when crs is None
 
 
 # ---------------------------------------------------------------- KML
@@ -67,7 +67,7 @@ def _coords(el: ET.Element | None) -> list[tuple[float, float]]:
         parts = token.split(",")
         if len(parts) < 2:
             raise ValueError(f"Malformed coordinate '{token[:40]}'")
-        lon, lat = float(parts[0]), float(parts[1])  # altitude is dropped: measurements are 2D
+        lon, lat = float(parts[0]), float(parts[1])  # I drop the altitude, we only measure in 2D
         if not (math.isfinite(lon) and math.isfinite(lat)) or abs(lon) > 180 or abs(lat) > 90:
             raise ValueError(f"Coordinate out of range '{token[:40]}'")
         out.append((lon, lat))
@@ -183,13 +183,13 @@ def _jsonable(v):
 def read_shapefile(shp: Path) -> list[RawFeature]:
     try:
         gdf = gpd.read_file(shp, engine="pyogrio")
-    except Exception as exc:  # GDAL raises a variety of types for corrupt files
+    except Exception as exc:  # GDAL throws all kinds of exception types on corrupt files
         raise ProcessingFailed(
             "UNREADABLE_SHAPEFILE", f"Shapefile '{shp.name}' could not be read.", {"reason": str(exc)[:300]}
         ) from None
 
     crs = gdf.crs
-    # A .prj that GDAL cannot interpret is not the same failure as no .prj at all.
+    # A .prj that GDAL can't read is a different problem from having no .prj, so I report them separately.
     crs_issue = None if crs is not None else ("INVALID_CRS" if shp.with_suffix(".prj").exists() else "MISSING_CRS")
     attrs = [c for c in gdf.columns if c != gdf.geometry.name]
     features = []

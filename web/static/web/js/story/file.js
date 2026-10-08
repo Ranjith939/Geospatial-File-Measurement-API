@@ -1,4 +1,4 @@
-// 02 File: the archive opens into the components the server actually extracted (names and sizes).
+// 02 File. The archive opens up into the parts the server really extracted, with their names and sizes.
 import { C, el, makeStage, paperGrid, text } from './stage.js'
 
 const ROLE = { '.shp': 'geometry', '.shx': 'index', '.dbf': 'attributes', '.prj': 'projection', '.cpg': 'encoding' }
@@ -12,7 +12,7 @@ export default function file({ stage, tl, data }) {
   const cx = 350, cy = 250
 
   const links = el('g', { stroke: C.line, 'stroke-width': 1 }, svg)
-  // Members fan out in a shallow arc below where the archive comes to rest (centre y = 100).
+  // The files spread out in a shallow arc under where the archive ends up (centre y = 100).
   const slots = parts.map((_, i) => {
     const u = n > 1 ? i / (n - 1) : 0.5
     return [90 + u * 520, 330 + Math.sin(u * Math.PI) * 50]
@@ -35,7 +35,7 @@ export default function file({ stage, tl, data }) {
   text(zip, cx, cy + 6, s.filename, { 'text-anchor': 'middle', 'font-size': 18, fill: C.ink, 'font-weight': 500 })
   text(zip, cx, cy + 30, `${s.size} bytes · ${n} members`, { 'text-anchor': 'middle', 'font-size': 10.5 })
 
-  // Scroll: the archive shrinks and lifts, members slide out to their slots along drawn links.
+  // On scroll the archive shrinks and moves up, and the files slide out to their spots along the drawn links.
   tl.to(zip, { scale: 0.62, y: -150, transformOrigin: '50% 50%', duration: 0.6, ease: 'power2.inOut' }, 0)
   cards.forEach(({ g, line, to }, i) => {
     const proxy = { t: 0 }

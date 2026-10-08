@@ -13,7 +13,7 @@ def test_projected_shapefile_measured_in_source_crs(measurements):
     assert f["measurement_crs"] == ["EPSG:32643"]
     assert f["layers"] == ["parcels"]
     areas = {v["properties"]["parcel_id"]: v["measurement"]["area_m2"] for v in m.values()}
-    assert areas == {"P-001": 200_000.0, "P-002": 100_000.0, "P-003": 90_000.0}  # exact: no reprojection
+    assert areas == {"P-001": 200_000.0, "P-002": 100_000.0, "P-003": 90_000.0}  # exact, since there's no reprojection
     assert m["0"]["properties"]["owner"] == "A. Rao"
     assert f["totals"]["area_ha"] == pytest.approx(39.0)
 
@@ -32,7 +32,7 @@ def test_missing_crs(measurements):
     assert f["status"] == "completed_with_errors" and f["failed_count"] == 3
     assert any("CRS information unavailable" in w for w in f["warnings"])
     assert all(v["error_code"] == "MISSING_CRS" and v["measurement"] is None for v in m.values())
-    assert all(v["geometry"] is not None and v["geometry_crs"] is None for v in m.values())  # still inspectable
+    assert all(v["geometry"] is not None and v["geometry_crs"] is None for v in m.values())  # we can still look at them
 
 
 def _with_prj(prj: bytes) -> bytes:
@@ -49,7 +49,7 @@ def test_invalid_crs(measurements):
 
 
 def test_unsupported_crs(measurements):
-    # A local site grid: metric, but not tied to the Earth, so it cannot be placed or reprojected.
+    # A local site grid. It's in metres, but it isn't tied to the Earth, so we can't place or reproject it.
     site_grid = b'LOCAL_CS["Site grid",LOCAL_DATUM["Site",0],UNIT["metre",1],AXIS["X",EAST],AXIS["Y",NORTH]]'
     f, m = measurements("sitegrid.zip", _with_prj(site_grid))
     assert {v["error_code"] for v in m.values()} == {"UNSUPPORTED_CRS"}
@@ -63,7 +63,7 @@ def test_corrupt_shp_content_fails_file(upload):
 
 
 def test_survey_parcel_matches_its_surveyed_area(measurements):
-    """The landing story's subject: measured in UTM 43N after reprojection from WGS84."""
+    """This is the parcel from the landing story. We reproject it from WGS84 and measure it in UTM 43N."""
     f, m = measurements("survey.zip")
     (parcel,) = m.values()
     assert f["crs"] == "EPSG:4326" and parcel["measurement_crs"] == "EPSG:32643"

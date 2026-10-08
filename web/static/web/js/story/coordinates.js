@@ -1,17 +1,17 @@
-// 04 Coordinates: a lon/lat field; the parcel slides into its true place and every vertex label reads
-// its current position in the field, so at rest the labels show the real stored coordinates.
+// 04 Coordinates. A lon/lat field where the parcel slides into its real spot. Each vertex label shows
+// its current position, so once it stops moving the labels show the real stored coordinates.
 import { C, el, fitter, fmtLat, fmtLon, makeStage, ringPath, text } from './stage.js'
 
 export default function coordinates({ section, stage, tl, data }) {
   const s = data.survey
   const svg = makeStage(stage)
-  // Field in degrees, scaled so a degree of longitude is drawn cos(lat) shorter than a degree of latitude.
+  // The field is in degrees, and I scale it so a degree of longitude is drawn cos(lat) shorter than a degree of latitude.
   const k = Math.cos((s.centroid[1] * Math.PI) / 180)
   const deg = s.vertices.map(([lon, lat]) => [lon * k, lat])
   const fit = fitter(deg, [235, 140, 465, 360])
   const toLonLat = (px) => { const [x, y] = fit.inverse(px); return [x / k, y] }
 
-  // Graticule every 0.001° with labels on the left and top edges.
+  // Grid lines every 0.001°, with labels on the left and top.
   const [lon0, lat1] = toLonLat([0, 0]), [lon1, lat0] = toLonLat([700, 500])
   const step = 0.001, grid = el('g', {}, svg)
   for (let v = Math.ceil(lon0 / step) * step; v <= lon1; v += step) {

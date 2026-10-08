@@ -1,4 +1,4 @@
-"""One error envelope for every API failure: {"error": {"code", "message", "details"}}. No tracebacks."""
+"""Every API error goes out in the same shape: {"error": {"code", "message", "details"}}. We never send tracebacks."""
 
 import logging
 

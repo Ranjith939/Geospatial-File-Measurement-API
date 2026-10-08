@@ -36,13 +36,13 @@ def test_feet_based_crs_is_converted_to_metres():
 
 
 def test_degrees_are_never_measured_directly():
-    """The same 0.01° square: its 'area' in degrees is 1e-4; projected it is ~1.2 km²."""
+    """Same 0.01° square both ways. In degrees the 'area' comes out as 1e-4, projected it's about 1.2 km²."""
     sq = box(77.5, 12.9, 77.51, 12.91)
     mcrs = crs_manager.measurement_crs_for(sq, crs_manager.WGS84)
     projected = crs_manager.transform(sq, crs_manager.WGS84, mcrs)
     m = measure(projected, mcrs, sq)
     assert m.value == pytest.approx(1_200_000, rel=0.02)
-    assert m.geodesic_value == pytest.approx(m.value, rel=0.002)  # planar UTM agrees with the ellipsoid
+    assert m.geodesic_value == pytest.approx(m.value, rel=0.002)  # planar UTM should agree with the geodesic value
 
 
 def test_invalid_geometry_detected():

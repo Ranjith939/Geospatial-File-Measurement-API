@@ -1,10 +1,10 @@
-// Display-only geometry helpers. Measurements always come from the API; nothing here measures
-// a feature. Web Mercator is used purely to draw WGS84 geometry on screen.
+// Geometry helpers for drawing only. All the measurements come from the API, nothing in here
+// measures a feature. I only use Web Mercator to put WGS84 geometry on the screen.
 
 const R = 6378137
 
 export function projector(geographic) {
-  if (!geographic) return ([x, y]) => [x, -y] // unknown CRS: draw source coordinates as-is
+  if (!geographic) return ([x, y]) => [x, -y] // if we don't know the CRS, just draw the source coordinates as they are
   return ([lon, lat]) => {
     const phi = (Math.max(-85, Math.min(85, lat)) * Math.PI) / 180
     return [(R * lon * Math.PI) / 180, -R * Math.log(Math.tan(Math.PI / 4 + phi / 2))]
@@ -15,7 +15,7 @@ export function unproject([x, y]) {
   return [(x / R) * (180 / Math.PI), (2 * Math.atan(Math.exp(-y / R)) - Math.PI / 2) * (180 / Math.PI)]
 }
 
-/** Visit every coordinate ring/line of a GeoJSON geometry as arrays of positions. */
+/** Goes through every ring and line of a GeoJSON geometry, as arrays of positions. */
 export function eachPath(geom, fn) {
   if (!geom) return
   const c = geom.coordinates
@@ -56,7 +56,7 @@ export function haversine([lon1, lat1], [lon2, lat2]) {
   return 2 * 6371008.8 * Math.asin(Math.sqrt(a))
 }
 
-/** Pick a "nice" number (1, 2, 5 x 10^n) at or below v. */
+/** Picks a "nice" round number (1, 2 or 5 x 10^n) at or below v. */
 export function niceStep(v) {
   const p = 10 ** Math.floor(Math.log10(v)), f = v / p
   return (f >= 5 ? 5 : f >= 2 ? 2 : 1) * p

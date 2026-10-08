@@ -1,5 +1,5 @@
-// Scroll story: one module and one timeline per scene, each driven by its own ScrollTrigger.
-// Data comes from the server (web/story.py), i.e. from real pipeline results on bundled samples.
+// The scroll story. Each scene has its own module and timeline, and its own ScrollTrigger drives it.
+// The data comes from the server (web/story.py), so it's real pipeline results on the bundled samples.
 import { reducedMotion } from '../dom.js'
 import hero from './hero.js'
 import file from './file.js'
@@ -25,12 +25,12 @@ for (const section of document.querySelectorAll('[data-scene]')) {
 }
 
 if (reducedMotion() || !ScrollTrigger) {
-  // Static scenes: every timeline shown at its final state, no scroll choreography.
+  // Static version: I jump every timeline to its end state and skip the scroll animation.
   for (const [, tl] of timelines) tl.progress(1)
 } else {
   gsap.registerPlugin(ScrollTrigger)
   const mm = gsap.matchMedia()
-  // Wide screens: pin each scene and scrub through it.
+  // On wide screens I pin each scene and scrub through it.
   mm.add('(min-width: 900px)', () => {
     for (const [section, tl] of timelines) {
       ScrollTrigger.create({
@@ -39,7 +39,7 @@ if (reducedMotion() || !ScrollTrigger) {
       })
     }
   })
-  // Narrow screens: no pinning (text and stage are stacked); scrub while the stage crosses the viewport.
+  // On narrow screens the text and stage are stacked, so no pinning. It just scrubs while the stage passes through the screen.
   mm.add('(max-width: 899px)', () => {
     for (const [section, tl] of timelines) {
       ScrollTrigger.create({ trigger: section.querySelector('[data-stage]'), start: 'top 85%', end: 'bottom 35%', scrub: 0.6, animation: tl })

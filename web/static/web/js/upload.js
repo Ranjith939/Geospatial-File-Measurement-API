@@ -1,4 +1,4 @@
-// Wires every [data-upload] block: drag & drop or browse -> POST /api/files/ -> open the result.
+// Hooks up every [data-upload] block. You drag and drop or browse, it posts to /api/files/, then opens the result.
 import { api } from './api.js'
 import { errorState } from './error-state.js'
 import { h } from './dom.js'

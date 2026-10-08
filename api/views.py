@@ -47,7 +47,7 @@ class FileListCreateView(APIView):
     )
     def post(self, request):
         max_bytes = settings.MAX_UPLOAD_MB * 1024 * 1024
-        if int(request.META.get("CONTENT_LENGTH") or 0) > max_bytes + CHUNK:  # multipart overhead allowance
+        if int(request.META.get("CONTENT_LENGTH") or 0) > max_bytes + CHUNK:  # small extra room for the multipart overhead
             raise _too_large()
         upload = request.FILES.get("file")
         if upload is None:

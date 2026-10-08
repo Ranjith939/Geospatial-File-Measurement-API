@@ -1,4 +1,4 @@
-"""Structured logs: one JSON object per line on the "geomeasure" logger, never file contents."""
+"""I log one JSON object per line on the "geomeasure" logger. File contents never go into the logs."""
 
 import json
 import logging

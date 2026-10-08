@@ -1,11 +1,11 @@
-"""The scroll story renders real backend results, and degrades to static scenes for reduced motion."""
+"""Checks that the scroll story shows real backend results, and falls back to static scenes for reduced motion."""
 from playwright.sync_api import Browser, Page, expect
 
 
 def test_story_uses_real_results(page: Page, site):
     page.goto(site)
     expect(page.locator("[data-scene]")).to_have_count(10)
-    assert page.evaluate("ScrollTrigger.getAll().length") == 10  # one trigger per scene, no global timeline
+    assert page.evaluate("ScrollTrigger.getAll().length") == 10  # each scene has its own trigger, we don't use one big timeline
     tally = page.locator("[data-tally]")
     expect(tally).to_contain_text("198")
     expect(tally).to_contain_text("196")
@@ -16,7 +16,7 @@ def test_story_uses_real_results(page: Page, site):
 def test_story_measurement_reaches_stored_value(page: Page, site):
     page.goto(site)
     data = page.evaluate("JSON.parse(document.getElementById('story-data').textContent)")
-    page.locator("#workspace").scroll_into_view_if_needed()  # past every scene: all timelines complete
+    page.locator("#workspace").scroll_into_view_if_needed()  # scrolled past every scene, so all timelines should be finished
     page.wait_for_timeout(1200)
     expected = f"{data['survey']['area_m2'] / 10000:,.2f} ha"
     expect(page.locator("[data-area]")).to_have_text(expected)
@@ -31,7 +31,7 @@ def test_reduced_motion_shows_static_final_scenes(browser: Browser, site):
 
 
 def test_api_docs_try_request(page: Page, site):
-    page.goto(site)  # processes the samples
+    page.goto(site)  # this is what processes the samples
     file_id = page.evaluate("JSON.parse(document.getElementById('story-data').textContent).survey.file_id")
     page.goto(f"{site}/api-docs/")
     box = page.locator("[data-try]").nth(1)

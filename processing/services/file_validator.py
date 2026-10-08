@@ -1,4 +1,4 @@
-"""Upload validation: name, size and actual content. Nothing here trusts the extension alone."""
+"""Checks the upload's name, size and actual content. I never trust the extension by itself here."""
 
 import re
 import zipfile
@@ -12,7 +12,7 @@ _UNSAFE_CHARS = re.compile(r"[^A-Za-z0-9._ -]+")
 
 
 def sanitize_filename(name: str | None) -> str:
-    """Keep only the base name and a conservative character set; never used as a storage path."""
+    """Keeps just the base name with safe characters. We never use this as a storage path."""
     base = Path((name or "").replace("\\", "/")).name
     base = _UNSAFE_CHARS.sub("_", base).strip(" .")
     return base[:200] or "upload"
@@ -32,7 +32,7 @@ def detect_file_type(filename: str) -> str:
 
 def validate_kml(path: Path) -> None:
     head = path.read_bytes()[:4096].lower()
-    # Entity declarations are never needed in KML and are the vector for XML bombs / XXE.
+    # KML never needs entity declarations, and they're how XML bombs and XXE attacks get in, so I reject them.
     if b"<!doctype" in head or b"<!entity" in head:
         raise ValidationFailed("INVALID_KML", "KML files with DOCTYPE or ENTITY declarations are not accepted.")
     try:

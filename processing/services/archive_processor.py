@@ -1,4 +1,4 @@
-"""Safe Shapefile extraction from a ZIP: only shapefile components, no traversal, no symlinks, no bombs."""
+"""Pulls Shapefiles out of a ZIP safely. I only extract shapefile parts and block path traversal, symlinks and zip bombs."""
 
 import shutil
 import stat
@@ -15,7 +15,7 @@ ALLOWED = {*REQUIRED, ".prj", ".cpg", ".qix", ".sbn", ".sbx", ".xml"}
 
 
 def _member_path(info: zipfile.ZipInfo) -> PurePosixPath | None:
-    """Return the safe relative path of a member, None to skip it, or raise for hostile entries."""
+    """Gives back a safe relative path for the member, None if we should skip it, or raises if the entry looks hostile."""
     name = info.filename.replace("\\", "/")
     p = PurePosixPath(name)
     if p.is_absolute() or ".." in p.parts or (p.parts and p.parts[0].endswith(":")):
@@ -29,7 +29,7 @@ def _member_path(info: zipfile.ZipInfo) -> PurePosixPath | None:
 
 
 def extract_shapefiles(zip_path: Path, dest: Path) -> tuple[list[Path], list[str], list[dict]]:
-    """Extract shapefile sets into `dest`. Returns (.shp paths of complete sets, warnings, components)."""
+    """Extracts the shapefile sets into `dest` and returns (.shp paths of the complete sets, warnings, components)."""
     with zipfile.ZipFile(zip_path) as zf:
         infos = zf.infolist()
         if not any(not i.is_dir() for i in infos):
@@ -55,7 +55,7 @@ def extract_shapefiles(zip_path: Path, dest: Path) -> tuple[list[Path], list[str
             raise ValidationFailed(
                 "INVALID_SHAPEFILE",
                 "The uploaded ZIP does not contain a valid Shapefile structure.",
-                # "found" tells the user what they actually sent, e.g. a GeoJSON zipped by mistake.
+                # I added "found" so the user sees what they actually sent, like a GeoJSON zipped by mistake.
                 {"expected": list(REQUIRED), "missing": incomplete,
                  "found": [i.filename for i in infos if not i.is_dir() and "__MACOSX" not in i.filename][:20]},
             )
@@ -64,7 +64,7 @@ def extract_shapefiles(zip_path: Path, dest: Path) -> tuple[list[Path], list[str
         shp_paths, components = [], []
         for info, p in members:
             target = (dest / p).resolve()
-            if not target.is_relative_to(dest):  # belt and braces after _member_path
+            if not target.is_relative_to(dest):  # _member_path already checks this, I just want a second check
                 raise ValidationFailed("UNSAFE_ARCHIVE", "The archive contains an unsafe path.")
             target.parent.mkdir(parents=True, exist_ok=True)
             with zf.open(info) as src, open(target, "wb") as out:

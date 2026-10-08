@@ -1,4 +1,4 @@
-"""Planar measurement in a projected CRS, with an ellipsoidal (geodesic) cross-check."""
+"""Measures in a projected CRS, and I also work out the geodesic value to double check it."""
 
 from dataclasses import dataclass
 
@@ -44,7 +44,7 @@ def check_geometry(geom: BaseGeometry) -> tuple[str, str] | None:
 
 
 def measure(projected: BaseGeometry, crs: CRS, geom_wgs84: BaseGeometry | None) -> Measurement:
-    """Measure an already-projected geometry. `geom_wgs84` feeds the geodesic cross-check."""
+    """Measures a geometry that's already projected. I use `geom_wgs84` for the geodesic double check."""
     kind = kind_of(projected.geom_type)
     if kind == "none":
         return Measurement("not_required")

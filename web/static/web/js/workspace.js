@@ -1,5 +1,5 @@
-// File workspace: header, 2D map / 2.5D inspector, measurement + CRS / technical panels, feature explorer.
-// Everything shown is read from the public API: GET /api/files/{id}/ and /measurements/.
+// The file workspace: header, 2D map or 2.5D inspector, the measurement and CRS/technical panels, and the feature explorer.
+// Everything here comes from the public API, GET /api/files/{id}/ and /measurements/.
 import { api } from './api.js'
 import { h, icon } from './dom.js'
 import { errorState } from './error-state.js'

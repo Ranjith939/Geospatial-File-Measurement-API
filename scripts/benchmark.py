@@ -3,9 +3,9 @@
     .venv/Scripts/python scripts/benchmark.py
 
 Each run uploads a generated WGS84 shapefile ZIP and a KML through the real API (DRF test client,
-throwaway SQLite DB in a temp dir) and prints the per-stage durations the server recorded, plus the
-time to serve GET /measurements/. Peak memory is the Python-heap peak from tracemalloc; GDAL's
-native allocations are not included.
+with a throwaway SQLite DB in a temp dir). It prints the stage timings the server recorded and how
+long GET /measurements/ takes. Peak memory comes from tracemalloc, so it's only the Python heap,
+GDAL's own native memory isn't counted.
 """
 
 import io
@@ -64,7 +64,7 @@ def main():
     call_command("migrate", verbosity=0)
     client = APIClient()
     post = lambda name, data: client.post("/api/files/", {"file": SimpleUploadedFile(name, data)}, format="multipart")  # noqa: E731
-    post("warm.kml", kml(5))  # warm imports
+    post("warm.kml", kml(5))  # first call just warms up the imports
     stages = ["parsing", "validating_geometry", "selecting_crs", "transforming", "measuring", "storing"]
     print(f"{'format':9} {'features':>8} {'POST ms':>9} " + " ".join(f"{s[:10]:>10}" for s in stages) + f" {'GET ms':>8} {'peak MB':>8}")
     for n in (10, 100, 1_000, 10_000):

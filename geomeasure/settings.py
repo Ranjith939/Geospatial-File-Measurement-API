@@ -1,7 +1,7 @@
 """Django settings for GeoMeasure.
 
-Secrets and deployment switches come from environment variables (or a local .env file)
-via python-decouple. See .env.example for every variable.
+I read secrets and deployment switches from environment variables (or a local .env file)
+with python-decouple. Every variable we use is listed in .env.example.
 """
 
 from pathlib import Path
@@ -17,7 +17,7 @@ SECRET_KEY = config("SECRET_KEY", default="")
 if not SECRET_KEY:
     if not DEBUG:
         raise ImproperlyConfigured("SECRET_KEY is not set. Put it in .env (see .env.example).")
-    SECRET_KEY = "dev-only-insecure-key"  # DEBUG=True only; never used in production
+    SECRET_KEY = "dev-only-insecure-key"  # only for DEBUG=True, production never sees this
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
 CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
 
@@ -66,7 +66,7 @@ WSGI_APPLICATION = "geomeasure.wsgi.application"
 
 
 def _database_from_url(url):
-    """sqlite:///geomeasure.db (default) or postgres://user:pass@host:port/name."""
+    """Turns DATABASE_URL into Django config. I support sqlite:///geomeasure.db (default) or postgres://user:pass@host:port/name."""
     parsed = urlparse(url)
     if parsed.scheme in ("postgres", "postgresql"):
         entry = {
@@ -103,16 +103,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- Uploads ------------------------------------------------------------------
 MAX_UPLOAD_MB = config("MAX_UPLOAD_MB", default=50, cast=int)
-# Zip-bomb guards: an archive may expand to at most this much / this many members.
+# These two stop zip bombs. An archive can't unpack to more than this many MB or this many files.
 MAX_EXTRACTED_MB = config("MAX_EXTRACTED_MB", default=500, cast=int)
 MAX_ARCHIVE_MEMBERS = config("MAX_ARCHIVE_MEMBERS", default=1000, cast=int)
-# Uploads above this spill from memory to a temp file; the hard cap is MAX_UPLOAD_MB.
+# Anything bigger than this goes to a temp file instead of memory. The real upload limit is MAX_UPLOAD_MB.
 FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
 
 # --- API ------------------------------------------------------------------------
-# The UI is served by this same app, so no CORS is configured: cross-origin browser
-# access is refused by default. Add django-cors-headers if a separate origin needs it.
+# The UI is served by this same app, so I didn't set up CORS and other origins get refused.
+# If we ever host the frontend somewhere else, add django-cors-headers.
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
@@ -140,7 +140,7 @@ if SECURE_SSL:
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
 
-# --- Logging: one JSON object per line from the "geomeasure" logger ------------
+# --- Logging: the "geomeasure" logger writes one JSON object per line ----------
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

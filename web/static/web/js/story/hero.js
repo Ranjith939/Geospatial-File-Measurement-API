@@ -1,4 +1,4 @@
-// 01 Hero: a generated coordinate field; the surveyed parcel's outline draws as you begin to scroll.
+// 01 Hero. A generated coordinate field, and the surveyed parcel's outline draws in as you start scrolling.
 import { C, drawable, el, fitter, localMetres, makeStage, paperGrid, ringPath, text } from './stage.js'
 
 export default function hero({ stage, tl, data }) {
@@ -9,7 +9,7 @@ export default function hero({ stage, tl, data }) {
   const fit = fitter(local, [190, 120, 510, 380])
   const pts = local.map(fit)
 
-  // Survey crosshairs at the four corners of the field, labelled with real coordinates of the parcel.
+  // Survey crosshairs in the four corners, labelled with the parcel's real coordinates.
   const corners = [[60, 60], [640, 60], [60, 440], [640, 440]]
   const marks = el('g', { fill: C.muted }, svg)
   corners.forEach(([x, y], i) => {
@@ -23,7 +23,7 @@ export default function hero({ stage, tl, data }) {
   const dots = pts.map(([x, y]) => el('circle', { cx: x, cy: y, r: 3.5, fill: '#fff', stroke: C.dark, 'stroke-width': 1.5, opacity: 0 }, svg))
   const cap = text(svg, 24, 486, `${s.filename} · ${s.properties.parcel_id || 'feature 1'}`, { 'font-size': 10.5 })
 
-  // Initial state is already legible; scrolling completes the outline and lifts the field slightly.
+  // It already reads fine before you scroll. Scrolling finishes the outline and lifts the field a little.
   tl.set(ring, { strokeDashoffset: len * 0.62 })
     .to(ring, { strokeDashoffset: 0, duration: 1 }, 0)
     .to(ring, { attr: { 'fill-opacity': 0.12 }, duration: 0.4 }, 0.6)

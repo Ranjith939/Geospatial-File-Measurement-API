@@ -1,11 +1,11 @@
 #!/bin/sh
-# Runs on every container start: apply migrations, then hand off to gunicorn.
-# Postgres readiness is gated by the compose healthcheck (depends_on: service_healthy).
+# This runs every time the container starts. I apply migrations first and then hand over to gunicorn.
+# We don't wait for Postgres here, the compose healthcheck (depends_on: service_healthy) handles that.
 set -e
 
 python manage.py migrate --noinput
 
-# Uploads are processed inside the request, so the timeout allows for large files.
+# Uploads get processed inside the request, so I keep the timeout long enough for big files.
 exec gunicorn geomeasure.wsgi:application \
     --workers "${WEB_WORKERS:-2}" --threads 4 --worker-class gthread \
     --bind 0.0.0.0:8000 --timeout 120 --graceful-timeout 30 \

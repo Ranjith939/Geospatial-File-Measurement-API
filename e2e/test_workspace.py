@@ -1,4 +1,4 @@
-"""Upload → recorded stages → results → selection → technical mode → 2.5D, in a real browser."""
+"""Walks the whole workspace in a real browser: upload, recorded stages, results, selection, technical mode and 2.5D."""
 import re
 
 from playwright.sync_api import Page, expect
@@ -13,7 +13,7 @@ def test_upload_shows_recorded_stages_then_results(page: Page, site, sample):
     upload(page, site, sample("land_parcels.zip"))
     expect(page.locator(".pipeline")).to_be_visible()
     expect(page.locator(".pipeline li", has_text="Selecting measurement CRS")).to_be_visible()
-    expect(page.locator("tbody tr")).to_have_count(100)  # first page of 198
+    expect(page.locator("tbody tr")).to_have_count(100)  # only the first page of the 198 rows
     expect(page.locator(".notice")).to_contain_text("2 of 198 features could not be measured")
     expect(page.locator(".crs")).to_contain_text("EPSG:32643")
 
@@ -61,7 +61,7 @@ def test_inspector_lazy_loads_three(page: Page, site, sample):
     expect(page.locator("tbody tr")).to_have_count(1)
     three = []
     page.on("request", lambda r: "three.module" in r.url and three.append(r.url))
-    assert not three  # not part of the normal page load
+    assert not three  # Three.js shouldn't load until someone opens the inspector
     page.get_by_role("button", name="Inspect 2.5D").click()
     expect(page.locator(".inspector canvas, .viz__fallback").first).to_be_visible()
     expect(page.locator(".inspector__note, .viz__fallback").first).to_be_visible()

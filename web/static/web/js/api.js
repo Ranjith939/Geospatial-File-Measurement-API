@@ -1,4 +1,4 @@
-// Thin fetch wrapper over the GeoMeasure REST API. Errors arrive as {error: {code, message, details}}.
+// A small fetch wrapper for the GeoMeasure REST API. Errors always come back as {error: {code, message, details}}.
 
 export class ApiError extends Error {
   constructor(status, body) {

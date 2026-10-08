@@ -7,7 +7,7 @@ def test_upload_then_retrieve(client, upload):
         "validating", "extracting", "parsing", "detecting_crs", "validating_geometry", "selecting_crs",
         "transforming", "measuring", "storing"]
     assert body["crs"] == "EPSG:4326" and body["file_type"] == "KML"
-    assert body["stages"][1]["status"] == "skipped"  # nothing to extract for KML
+    assert body["stages"][1]["status"] == "skipped"  # KML has nothing to extract
     assert "stored_filename" not in body
 
     info = client.get(f"/api/files/{body['id']}/")

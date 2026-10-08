@@ -1,4 +1,4 @@
-"""Helpers shared by the test suites."""
+"""Small helpers I share between the test files."""
 import io
 import zipfile
 from pathlib import Path

@@ -1,5 +1,5 @@
-// 06 Transform the space (signature scene). The graticule around the UTM zone was reprojected
-// server-side by PyProj; here each point is interpolated between its degree and metre positions.
+// 06 Transform the space, the main scene. PyProj reprojected the grid around the UTM zone on the
+// server. Here I just move each point between its degree position and its metre position.
 import { C, el, fitter, fmt, fmtLat, fmtLon, makeStage, text } from './stage.js'
 
 export default function transform({ section, stage, tl, data }) {
@@ -9,7 +9,7 @@ export default function transform({ section, stage, tl, data }) {
   const degPts = g.degrees.flat(), mPts = g.metres.flat()
   const fd = fitter(degPts, box), fm = fitter(mPts, box)
 
-  // Parcel position in both spaces: centroid in degrees, mean of projected vertices in metres.
+  // Where the parcel sits in both spaces. Centroid in degrees, and the average of the projected vertices in metres.
   const cM = s.vertices_m.reduce((a, p) => [a[0] + p[0] / s.vertices_m.length, a[1] + p[1] / s.vertices_m.length], [0, 0])
   const pd = fd(s.centroid), pm = fm(cM)
 
@@ -25,7 +25,7 @@ export default function transform({ section, stage, tl, data }) {
       a: line.map(fd), b: g.metres[i].map(fm),
     }
   })
-  // The UTM zone itself (central meridian ±3°) as a shaded band between its two edge meridians.
+  // The UTM zone itself (central meridian ±3°), drawn as a shaded band between its two edge meridians.
   const edgeIdx = lines.map((l, i) => (i < g.meridians && Math.abs(Math.abs(g.degrees[i][0][0] - g.central_meridian) - 3) < 1e-6 ? i : -1)).filter((i) => i >= 0)
   const band = el('path', { fill: C.primary, 'fill-opacity': 0.07, stroke: 'none' }, svg)
   svg.insertBefore(band, svg.firstChild)

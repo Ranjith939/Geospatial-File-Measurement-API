@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="{% static 'web/css/app.css' %}">
-{# Three.js is only fetched when the 2.5D inspector is opened (dynamic import in inspector.js). #}
+{# We only fetch Three.js when someone opens the 2.5D inspector (it's a dynamic import in inspector.js). #}
 <script type="importmap">
 {
   "imports": {

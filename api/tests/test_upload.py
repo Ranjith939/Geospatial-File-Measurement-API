@@ -1,4 +1,4 @@
-"""Upload-level validation: rejected uploads return the error envelope and store nothing."""
+"""Upload validation tests. When we reject an upload it should return the error envelope and save nothing."""
 from core.models import GeoFile
 from core.testing import SAMPLES
 
@@ -38,7 +38,7 @@ def test_missing_file_field(client, db):
 
 
 def test_oversized_upload(upload):
-    r = upload("big.kml", b"<kml>" + b" " * (3 * 1024 * 1024) + b"</kml>")  # limit is 2 MB in tests
+    r = upload("big.kml", b"<kml>" + b" " * (3 * 1024 * 1024) + b"</kml>")  # tests use a 2 MB limit
     assert r.status_code == 413 and code(r) == "FILE_TOO_LARGE"
 
 

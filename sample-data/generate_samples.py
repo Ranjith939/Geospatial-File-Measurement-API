@@ -2,9 +2,9 @@
 
     .venv/Scripts/python sample-data/generate_samples.py
 
-Shapes are authored in UTM zone 43N (EPSG:32643, around Bengaluru) where their true size is
-known exactly, then written either in that projected CRS or converted to WGS84. Expected
-values are listed in sample-data/README.md and asserted in backend/tests.
+I draw every shape in UTM zone 43N (EPSG:32643, around Bengaluru) so I know its exact size,
+then write it out either in that CRS or converted to WGS84. The expected values are in
+sample-data/README.md and the tests in processing/tests and api/tests check them.
 """
 
 import shutil
@@ -59,14 +59,14 @@ def square(x, y, side):
 
 
 def write_kmls():
-    # 1 km x 1 km = 1,000,000 m2 = 100 ha; second parcel 400 x 250 m with a 100 x 100 m hole = 90,000 m2.
+    # First parcel is 1 km x 1 km = 1,000,000 m2 = 100 ha. The second is 400 x 250 m with a 100 x 100 m hole, so 90,000 m2.
     body = placemark("Parcel A", poly_xml(square(E0, N0, 1000)), "parcel-a", {"owner": "Survey Dept", "zone": "R1"})
     body += placemark("Parcel B", poly_xml(
         [(E0 + 1500, N0), (E0 + 1900, N0), (E0 + 1900, N0 + 250), (E0 + 1500, N0 + 250), (E0 + 1500, N0)],
         [square(E0 + 1600, N0 + 50, 100)]), "parcel-b", {"owner": "Municipal", "zone": "C2"})
     (OUT / "polygon.kml").write_text(kml_doc("Polygons", body), encoding="utf-8")
 
-    # 600 m + 800 m L-shaped route = 1,400 m
+    # an L-shaped route, 600 m + 800 m = 1,400 m
     body = placemark("Service Road", line_xml([(E0, N0), (E0 + 600, N0), (E0 + 600, N0 + 800)]), "road-1",
                      {"surface": "asphalt", "lanes": 2})
     (OUT / "line.kml").write_text(kml_doc("Lines", body), encoding="utf-8")
@@ -74,7 +74,7 @@ def write_kmls():
     body = placemark("Survey Marker", point_xml(E0 + 10, N0 + 10), "bm-1", {"type": "benchmark"})
     (OUT / "point.kml").write_text(kml_doc("Points", body), encoding="utf-8")
 
-    # Mixed: 3 good, 1 point, 3 bad (bow-tie, broken coordinates, unsupported collection).
+    # A mixed file: 3 good ones, 1 point and 3 bad ones (a bow-tie, broken coordinates and an unsupported collection).
     good = (placemark("Field 1", poly_xml(square(E0, N0, 200)), "f1", {"crop": "ragi"})
             + placemark("Field 2", poly_xml(square(E0 + 300, N0, 300)), "f2", {"crop": "maize"})
             + placemark("Canal", line_xml([(E0, N0 - 50), (E0 + 1000, N0 - 50)]), "canal", {"kind": "irrigation"})
@@ -99,7 +99,7 @@ def zip_shapefile(gdf, name, zip_name, drop=(), flat=False):
 
 
 def write_shapefiles():
-    # Projected source: measured directly in EPSG:32643, so areas are exact.
+    # This one is already projected, so we measure straight in EPSG:32643 and the areas come out exact.
     parcels = gpd.GeoDataFrame(
         {"parcel_id": ["P-001", "P-002", "P-003"], "owner": ["A. Rao", "B. Iyer", "C. Khan"],
          "land_use": ["agri", "agri", "residential"]},
@@ -111,8 +111,8 @@ def write_shapefiles():
     zip_shapefile(parcels, "parcels", "missing_crs.zip", drop={".prj"})
     (OUT / "corrupt.zip").write_bytes(b"PK\x03\x04" + b"\x00garbage" * 64)
 
-    # Demo dataset in WGS84: a 14 x 14 grid of 198 cells; cells 83 and 141 hold self-intersecting
-    # "bow-tie" parcels, so 196 succeed and 2 fail in the middle of the file.
+    # The demo dataset, in WGS84. It's a 198-cell grid, and I made cells 83 and 141 self-intersecting
+    # "bow-tie" parcels, so 196 pass and 2 fail right in the middle of the file.
     rows, geoms = [], []
     for i in range(198):
         r, c = divmod(i, 14)
@@ -121,14 +121,14 @@ def write_shapefiles():
             geoms.append(Polygon([ll(*p) for p in [(x, y), (x + 300, y + 300), (x + 300, y), (x, y + 300), (x, y)]]))
             rows.append({"parcel_no": i + 1, "village": "Disputed", "survey_m2": None})
             continue
-        side = 150 + (i * 37) % 200  # deterministic 150..349 m
+        side = 150 + (i * 37) % 200  # always the same sizes, between 150 and 349 m
         geoms.append(Polygon([ll(px, py) for px, py in square(x, y, side)]))
         rows.append({"parcel_no": i + 1, "village": ["Hebbal", "Yelahanka", "Jakkur", "Kogilu"][i % 4],
                      "survey_m2": float(side * side)})
     zip_shapefile(gpd.GeoDataFrame(rows, geometry=geoms, crs=4326), "land_parcels", "land_parcels.zip")
 
-    # The landing story's subject: one irregular surveyed parcel, WGS84 with .prj. Its area is
-    # whatever the shoelace formula gives in UTM 43N; SURVEY_M2 records that for the tests.
+    # The parcel from the landing story: one irregular surveyed shape, in WGS84 with a .prj. Its area is
+    # whatever the shoelace formula gives in UTM 43N, and I save that in SURVEY_M2 for the tests.
     ring = [(E0 + 120, N0 + 40), (E0 + 395, N0), (E0 + 520, N0 + 180), (E0 + 455, N0 + 330),
             (E0 + 240, N0 + 395), (E0 + 30, N0 + 290), (E0, N0 + 140), (E0 + 120, N0 + 40)]
     survey = Polygon(ring)
@@ -137,7 +137,7 @@ def write_shapefiles():
                      geometry=[Polygon([ll(*p) for p in ring])], crs=4326).pipe(
         lambda g: zip_shapefile(g, "survey", "survey.zip", flat=True))
 
-    # Lines + points shapefile in WGS84.
+    # A shapefile with lines and points, in WGS84.
     roads = gpd.GeoDataFrame({"name": ["Ring Rd", "Link Rd"], "lanes": [4, 2]},
                              geometry=[LineString([ll(E0, N0), ll(E0 + 2000, N0)]),
                                        LineString([ll(E0, N0), ll(E0, N0 + 500), ll(E0 + 300, N0 + 900)])],

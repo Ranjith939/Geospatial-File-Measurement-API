@@ -1,4 +1,4 @@
-// Side panels: file summary (Simple), selected-feature measurement, CRS transformation, Technical mode.
+// The side panels: file summary (Simple mode), the selected feature's measurement, the CRS change, and Technical mode.
 import { countUp, enter, h, icon, svg } from './dom.js'
 import { errorState } from './error-state.js'
 import { fmtDistance, fmtInt, fmtNum, featureLabel } from './geo.js'
@@ -59,7 +59,7 @@ export function measurementPanel(feature, file, onClear) {
   return enter(h('div.panel', {}, head, h('div.panel__body', { 'aria-live': 'polite' }, body)))
 }
 
-// Meridians converge (geographic) and straighten into a square grid (projected); same path structure.
+// In geographic the meridians come together, in projected they straighten into a square grid. I keep the same path structure for both so it can morph.
 function gridPath(projected) {
   const v = Array.from({ length: 7 }, (_, i) => {
     const x = 10 + i * 30, top = projected ? x : 100 + (x - 100) * 0.55
@@ -87,7 +87,7 @@ export function crsPanel(file, names) {
     h('div.crs__morph', {}, path, h('p.label', { style: 'margin-top:6px', text: reprojected ? '↓ Transform · degrees → metres' : src.type === 'projected' ? 'Source CRS is metric · no transform' : 'No measurable features' })),
     targets.length > 0 && block('Measurement CRS', targets.join(', '), targets.map((t) => names[t] || t).join(', '), `projected · ${targets.length > 1 ? 'UTM zone per feature' : 'metre'}`),
     targets.length > 0 && h('p.crs__ready', {}, icon('check'), 'Measurement ready'))
-  // Morph the grid when the panel scrolls into view: the coordinate space changes, the data does not.
+  // I morph the grid when the panel scrolls into view. The coordinate space changes, but the data stays the same.
   new IntersectionObserver(([e], obs) => {
     if (!e.isIntersecting) return
     obs.disconnect()

@@ -21,8 +21,8 @@ jobs:
         run: |
           python manage.py check
           python manage.py makemigrations --check --dry-run
-      # Production hashes static filenames; this fails on any url() or import a vendor file
-      # references but was never shipped.
+      # In production the static filenames get hashed, so I run collectstatic here. It breaks if a
+      # vendor file points (url() or import) at something we never shipped.
       - name: Static files collect cleanly
         run: python manage.py collectstatic --noinput
       - name: Unit + API tests

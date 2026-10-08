@@ -105,7 +105,7 @@ class ErrorSerializer(serializers.Serializer):
 
 
 def feature_measurement(f: Feature, include_geometry: bool = True) -> dict:
-    """Plain-dict form of FeatureMeasurementSerializer: cheap enough for 10,000-feature files."""
+    """Same output as FeatureMeasurementSerializer, but built with plain dicts so 10,000-feature files stay fast."""
     v = f.measurement_value
     measurement = None
     if v is not None:

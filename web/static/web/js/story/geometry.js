@@ -1,4 +1,4 @@
-// 03 Geometry: vertices, then edges, then a closed, filled ring. The parcel's real vertex order.
+// 03 Geometry. First the vertices, then the edges, then a closed filled ring, in the parcel's real vertex order.
 import { C, drawable, el, fitter, localMetres, makeStage, paperGrid, ringPath, text } from './stage.js'
 
 export default function geometry({ stage, tl, data }) {

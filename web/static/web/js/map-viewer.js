@@ -1,5 +1,6 @@
-// 2D geometry map: SVG, no tiles, no WebGL. Pan/zoom by viewBox; feature nodes are built once.
-// Display only: every measurement label comes from the API; extents are geodesic bbox spans.
+// The 2D map. It's plain SVG, no tiles and no WebGL. Pan and zoom just change the viewBox, and I build
+// the feature nodes only once. It only displays things. Every measurement label comes from the API,
+// and the extents are geodesic bbox spans.
 import { bboxOf, fmtDistance, fmtMeasurement, featureLabel, haversine, niceStep, projector, toSvg, unproject } from './geo.js'
 import { icon, reducedMotion, tween } from './dom.js'
 
@@ -17,7 +18,7 @@ function el(name, attrs = {}, parent) {
 function fitView(b, W, H) {
   if (!b || !W || !H) return null
   let [x0, y0, x1, y1] = b
-  const span = Math.max(x1 - x0, y1 - y0) || 200 // a lone point still gets a sensible frame
+  const span = Math.max(x1 - x0, y1 - y0) || 200 // a single point still needs a sensible frame around it
   if (x1 - x0 < span * 0.05) { x0 -= span / 2; x1 += span / 2 }
   if (y1 - y0 < span * 0.05) { y0 -= span / 2; y1 += span / 2 }
   const s = Math.max((x1 - x0) / Math.max(W - PAD * 2, 50), (y1 - y0) / Math.max(H - PAD * 2, 50))
@@ -107,7 +108,7 @@ export class MapViewer {
       c.setAttribute('fill', failed ? C.error : sel ? C.dark : '#FFFFFF')
       c.setAttribute('stroke', stroke)
     }
-    if (sel) n.g.parentNode.append(n.g) // draw on top
+    if (sel) n.g.parentNode.append(n.g) // move it to the end so it draws on top
   }
 
   setSelected(id, { fit = false } = {}) {
@@ -165,7 +166,7 @@ export class MapViewer {
   setView(v) {
     if (!v) return
     this.view = v
-    this.k = v[2] / this.W // world units per pixel
+    this.k = v[2] / this.W // how many world units one pixel is
     this.svg.setAttribute('viewBox', v.join(' '))
     for (const n of this.nodes.values()) {
       const sel = n.f.feature_id === this.selected
@@ -189,7 +190,7 @@ export class MapViewer {
       const dx = e.clientX - d.x, dy = e.clientY - d.y
       if (!d.moved && Math.abs(dx) + Math.abs(dy) > 3) {
         d.moved = true
-        this.root.setPointerCapture?.(e.pointerId) // only once dragging, so clicks still reach features
+        this.root.setPointerCapture?.(e.pointerId) // I only capture once a drag starts, otherwise clicks wouldn't reach the features
       }
       if (d.moved) this.setView([d.v[0] - dx * this.k, d.v[1] - dy * this.k, d.v[2], d.v[3]])
     })
@@ -199,7 +200,7 @@ export class MapViewer {
     this.root.addEventListener('pointerleave', () => { this.tip.hidden = true })
   }
 
-  /** Lon/lat graticule (or source units when the CRS is unknown) at a "nice" spacing, plus edge labels. */
+  /** Draws the lon/lat grid (or source units if the CRS is unknown) at a round spacing, with labels on the edges. */
   drawGrid() {
     const v = this.view
     const inv = this.geographic ? unproject : ([x, y]) => [x, -y]
@@ -224,7 +225,7 @@ export class MapViewer {
 
   toPx([x, y]) { return [(x - this.view[0]) / this.k, (y - this.view[1]) / this.k] }
 
-  /** Pixel-space layer: grid labels, scale bar, and the selected feature's measurement overlay. */
+  /** The layer drawn in pixels: grid labels, the scale bar and the measurement overlay for the selected feature. */
   drawOverlay(animate) {
     if (!this.view) return
     const o = this.overlay

@@ -14,7 +14,7 @@ def test_polygon_kml(measurements):
     assert a["measurement"]["area_ha"] == pytest.approx(100, rel=1e-6)
     assert a["properties"] == {"name": "Parcel A", "owner": "Survey Dept", "zone": "R1"}
     assert a["source_id"] == "parcel-a"
-    assert m["Parcel B"]["measurement"]["area_m2"] == pytest.approx(90_000, rel=1e-6)  # hole subtracted
+    assert m["Parcel B"]["measurement"]["area_m2"] == pytest.approx(90_000, rel=1e-6)  # the hole is taken out
 
 
 def test_line_kml(measurements):

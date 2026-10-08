@@ -5,7 +5,7 @@ from .story import story_context
 
 
 def landing(request):
-    """The scroll story (built from real sample results) ending in the upload workspace."""
+    """The landing page. It's the scroll story (made from real sample results) and it ends at the upload workspace."""
     return render(request, "web/landing.html", {"story": story_context()})
 
 
@@ -14,7 +14,7 @@ def files(request):
 
 
 def file_detail(request, file_id: int):
-    """Shell only; workspace.js loads the file and its measurements through the public API."""
+    """Just the page shell. workspace.js loads the file and its measurements through the public API."""
     return render(request, "web/file_detail.html", {"file_id": file_id})
 
 

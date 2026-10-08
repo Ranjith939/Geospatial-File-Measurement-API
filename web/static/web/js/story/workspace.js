@@ -1,5 +1,5 @@
-// 10 Into the workspace: the story's pieces settle into the real workspace layout (file/status/CRS
-// header, map, measurement side panel, feature explorer), then the upload area follows.
+// 10 Into the workspace. The pieces from the story settle into the real workspace layout (file/status/CRS
+// header, map, measurement panel, feature explorer), and then the upload area comes in.
 import { C, el, makeStage, paperGrid, text } from './stage.js'
 
 const BLOCKS = [

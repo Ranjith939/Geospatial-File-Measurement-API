@@ -29,7 +29,7 @@ def test_suitable_projected_source_is_kept():
 
 
 def test_web_mercator_is_not_used_for_measurement():
-    # EPSG:3857 is projected but inflates areas by 1/cos²(lat); it must be replaced by UTM.
+    # EPSG:3857 is projected, but it blows areas up by 1/cos²(lat), so we have to swap it for UTM.
     chosen = crs_manager.measurement_crs_for(box(10, 59.9, 10.01, 59.91), CRS.from_epsg(3857))
     assert chosen.to_epsg() == 32632
 

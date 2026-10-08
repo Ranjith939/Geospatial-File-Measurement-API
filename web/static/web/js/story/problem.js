@@ -1,4 +1,4 @@
-// 05 The CRS problem: one degree of longitude is not a fixed length. Real values from cos(latitude).
+// 05 The CRS problem. A degree of longitude isn't a fixed length. The values here are real, from cos(latitude).
 import { C, el, fmt, makeStage, paperGrid, text } from './stage.js'
 
 export default function problem({ section, stage, tl, data }) {

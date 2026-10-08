@@ -1,5 +1,5 @@
-// 08 Many features: the 198 real parcel outlines appear in file order with a running count; the
-// two that failed are drawn dashed red. The tally beside it is the stored result.
+// 08 Many features. All 198 real parcel outlines show up in file order with a running count, and
+// the two that failed are drawn in dashed red. The totals next to it are the saved result.
 import { C, el, fitter, localMetres, makeStage, ringPath, text } from './stage.js'
 
 export default function features({ section, stage, tl, data }) {

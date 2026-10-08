@@ -1,4 +1,4 @@
-"""Content validation: the extension is never trusted on its own."""
+"""Content validation tests. We never trust the file extension by itself."""
 from processing.services.file_validator import sanitize_filename
 from core.testing import kml
 

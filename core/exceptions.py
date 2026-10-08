@@ -1,5 +1,5 @@
 class GeoMeasureError(Exception):
-    """An error that is safe to show to API clients: a stable code, a human message, optional details."""
+    """An error we can safely show to API clients. It has a fixed code, a readable message and optional details."""
 
     status_code = 400
 
@@ -13,13 +13,13 @@ class GeoMeasureError(Exception):
 
 
 class ValidationFailed(GeoMeasureError):
-    """The upload was rejected before anything was stored."""
+    """We rejected the upload before saving anything."""
 
     status_code = 422
 
 
 class ProcessingFailed(GeoMeasureError):
-    """The file passed validation but could not be read as a whole."""
+    """The file passed validation, but we couldn't read it at all."""
 
     status_code = 422
 

@@ -1,5 +1,5 @@
-// 09 Failure isolation: the measuring pass walks the real features around the first failure; the bad
-// one is set aside with its stored error while the rest are measured.
+// 09 Failure isolation. The measuring pass walks over the real features around the first failure. The
+// bad one gets put aside with its saved error while we keep measuring the rest.
 import { C, el, makeStage, paperGrid, text } from './stage.js'
 
 export default function failure({ stage, tl, data }) {

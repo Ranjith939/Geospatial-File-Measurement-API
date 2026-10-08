@@ -1,6 +1,6 @@
-// 2.5D inspector. Loaded with import() only when the user opens it, so Three.js never ships otherwise.
-// The stack model (inspector_stack.glb) is generated procedurally by D:\GLB\export_geomeasure.js;
-// the uploaded feature itself is extruded onto its Geometry_Anchor node.
+// The 2.5D inspector. I load it with import() only when the user opens it, so nobody downloads
+// Three.js otherwise. The stack model (inspector_stack.glb) is generated in code by
+// D:\GLB\export_geomeasure.js, and the uploaded feature gets extruded onto its Geometry_Anchor node.
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
@@ -9,9 +9,9 @@ import { h, icon, reducedMotion } from './dom.js'
 
 const LAYERS = ['File', 'CRS', 'Geometry', 'Properties']
 const GAP = 0.55
-let introDone = false // the camera fly-in plays once per page, not on every reselection
+let introDone = false // the camera fly-in only plays once per page, not every time you pick a feature
 
-/** Local metric frame for display: equirectangular around the data centre, north = -Z. */
+/** A local frame in metres just for drawing. Equirectangular around the centre of the data, with north = -Z. */
 function localFrame(geoms, geographic) {
   let b = null
   geoms.forEach((g) => eachPath(g, (cs) => cs.forEach(([x, y]) => {
@@ -32,7 +32,7 @@ function buildFeatures(features, selectedId, geographic, extent) {
   const P = (p) => { const [x, y] = frame.f(p); return [x * s, y * s] }
   for (const f of features) {
     const sel = f.feature_id === selectedId, dim = selectedId != null && !sel
-    const height = sel ? 0.22 : dim ? 0.05 : 0.12 // visual only, never elevation
+    const height = sel ? 0.22 : dim ? 0.05 : 0.12 // just for looks, this isn't real elevation
     const mat = new THREE.MeshStandardMaterial({ color: f.status !== 'success' ? 0xc34a4a : sel ? 0x1e4534 : 0x2f6b4f, roughness: 0.55, transparent: dim, opacity: dim ? 0.35 : 1 })
     const rings = []
     eachPath(f.geometry, (coords, kind) => {
@@ -51,7 +51,7 @@ function buildFeatures(features, selectedId, geographic, extent) {
         group.add(pin)
       }
     })
-    // First ring is a shell; an opposite-winding ring is a hole of the current shell.
+    // The first ring is the outer shell. A ring wound the other way is a hole in that shell.
     let shape = null
     for (const ring of rings) {
       const pts = ring.map(([x, y]) => new THREE.Vector2(x, y))
@@ -157,7 +157,7 @@ export function mountInspector(host, { file, features, selected }) {
     }
     state.explode += (state.target - state.explode) * 0.12
     for (const { o, y, i } of Object.values(layers)) o.position.y = y + state.explode * GAP * i
-    controls.target.y = 0.15 + state.explode * 0.75 // keep the whole stack in frame as it opens
+    controls.target.y = 0.15 + state.explode * 0.75 // keeps the whole stack in view while it opens up
     controls.update()
     renderer.render(scene, camera)
     const { width, height } = box.getBoundingClientRect()

@@ -1,5 +1,5 @@
-// Replays the stages the backend recorded for this upload, with their real durations.
-// Processing already happened server-side; this only paces the reveal so each step is readable.
+// Replays the stages the backend recorded for this upload, using their real timings.
+// The server already did all the work. This just slows the reveal down so you can read each step.
 import { h, icon, reducedMotion, svg } from './dom.js'
 
 const LABELS = {
@@ -20,7 +20,7 @@ export function replayPipeline(host, file) {
       h('div.pipeline__grid', {}, h('ol.panel', { 'aria-live': 'polite' }, items, done), glyph.el),
       h('p.muted', { style: 'margin-top:14px;font-size:12px', text: 'Replay of the stage timings recorded by the server for this upload.' })))
 
-    const reprojected = (file.measurement_crs || []).length > 0 // nothing is drawn as metric unless the server measured
+    const reprojected = (file.measurement_crs || []).length > 0 // we don't show anything as metric unless the server actually measured it
     const show = (i) => {
       items.forEach((li, j) => {
         const s = stages[j]
@@ -56,7 +56,7 @@ export function replayPipeline(host, file) {
   })
 }
 
-/** FILE → geometry → coordinate grid → projected geometry → dimension lines. */
+/** The little animation: file, then geometry, coordinate grid, projected geometry and dimension lines. */
 function pipelineGlyph() {
   const grid = (p) => Array.from({ length: 5 }, (_, i) => {
     const t = 40 + i * 55, top = p ? t : 150 + (t - 150) * 0.72

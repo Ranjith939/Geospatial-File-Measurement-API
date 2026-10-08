@@ -1,4 +1,4 @@
-// Feature explorer: keyboard-usable table, filterable, paged 100 rows at a time.
+// The feature explorer. A table you can use with the keyboard, with a filter, showing 100 rows per page.
 import { h } from './dom.js'
 import { fmtMeasurement, featureLabel } from './geo.js'
 

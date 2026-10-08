@@ -1,4 +1,4 @@
-"""ZIP handling: nothing hostile is extracted, and only Shapefile components are."""
+"""ZIP tests. We should never extract anything hostile, and only pull out Shapefile parts."""
 import io
 import zipfile
 
@@ -37,11 +37,11 @@ def test_empty_zip(upload):
 def test_zip_without_shapefile(upload):
     r = upload("docs.zip", make_zip({"park.geojson": b"{}", "readme.txt": b"hello"}))
     assert r.status_code == 422 and code(r) == "INVALID_SHAPEFILE"
-    assert r.json()["error"]["details"]["found"] == ["park.geojson", "readme.txt"]  # says what was sent
+    assert r.json()["error"]["details"]["found"] == ["park.geojson", "readme.txt"]  # tells the user what they actually sent
 
 
 def test_missing_shapefile_component(upload):
-    r = upload("invalid_shapefile.zip")  # .shx removed
+    r = upload("invalid_shapefile.zip")  # I removed the .shx from this one
     assert r.status_code == 422 and code(r) == "INVALID_SHAPEFILE"
     assert r.json()["error"]["details"]["missing"] == {"parcels/parcels": [".shx"]}
 

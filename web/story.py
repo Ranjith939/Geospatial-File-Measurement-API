@@ -1,8 +1,8 @@
-"""Data for the landing page's scroll story, computed by the real pipeline.
+"""Builds the data for the landing page's scroll story using the real pipeline.
 
-The story is told with two bundled samples: survey.zip (one surveyed parcel) and land_parcels.zip
-(198 parcels, 2 invalid). Each is processed through process_upload() once and kept with
-is_sample=True, so every number the story shows is a backend result, not an illustration.
+The story uses two bundled samples: survey.zip (one surveyed parcel) and land_parcels.zip
+(198 parcels, 2 of them invalid). I run each one through process_upload() once and keep it with
+is_sample=True, so every number in the story is a real backend result, nothing made up.
 """
 
 import math
@@ -21,7 +21,7 @@ STORY_SAMPLES = ("survey.zip", "land_parcels.zip", "line.kml")
 
 
 def sample_file(name: str) -> GeoFile | None:
-    """The processed sample, processing it on first use. None if the sample file is absent."""
+    """Gives back the processed sample, processing it the first time. Returns None if the sample file is missing."""
     found = GeoFile.objects.filter(is_sample=True, original_filename=name).first()
     if found or not (SAMPLES / name).exists():
         return found
@@ -30,12 +30,12 @@ def sample_file(name: str) -> GeoFile | None:
 
 
 def _graticule(mcrs: CRS, lat_sign: int) -> dict:
-    """Meridians/parallels around the UTM zone, in degrees and in the zone's projected metres."""
+    """Meridians and parallels around the UTM zone, both in degrees and in the zone's projected metres."""
     op = mcrs.coordinate_operation
     cm = next((p.value for p in (op.params if op else []) if "Longitude" in p.name), 0)  # central meridian
     to_utm = Transformer.from_crs(4326, mcrs, always_xy=True)
-    # Wider than the zone itself (±15°, latitudes 0-60°): transverse Mercator's distortion grows away
-    # from the central meridian, which is exactly what the scene needs to show.
+    # I go wider than the zone itself (±15°, latitudes 0-60°) on purpose. Transverse Mercator distorts
+    # more the further you get from the central meridian, and that's exactly what the scene shows.
     lats = [lat_sign * v for v in range(0, 61, 10)]
     lons = [cm + d for d in range(-15, 16, 3)]
     lines = [[(lon, lat_sign * t) for t in range(0, 61, 2)] for lon in lons]
@@ -71,12 +71,12 @@ def story_context() -> dict | None:
             "vertices_m": [list(map(lambda v: round(v, 2), p)) for p in projected.exterior.coords][:-1],
             "area_m2": poly.measurement_value,
             "geodesic_m2": poly.geodesic_value,
-            "area_deg2": geom.area,  # what a naive planar calculation in degrees would return
+            "area_deg2": geom.area,  # what you'd get if you naively measured in degrees
             "measurement_crs": poly.measurement_crs,
             "measurement_crs_name": poly.measurement_crs_name,
             "properties": poly.properties,
             "centroid": [round(geom.centroid.x, 6), round(lat, 6)],
-            # Ground length of one degree of longitude: at the equator, at this parcel, and at 60°.
+            # How long one degree of longitude is on the ground, at the equator, at this parcel and at 60°.
             "deg_lon_m": {str(a): round(111_320 * math.cos(math.radians(a))) for a in (0, round(lat, 2), 60)},
         },
         "graticule": _graticule(mcrs, 1 if lat >= 0 else -1),

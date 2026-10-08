@@ -1,8 +1,8 @@
-"""CRS detection and measurement-CRS selection.
+"""Finds the CRS of a feature and picks which CRS we measure in.
 
-Rule: never measure in degrees. A projected source CRS is used as-is when it is fit for
-measurement; anything geographic (or a projection that distorts area/length badly, such as
-Web Mercator) is measured in the UTM zone of the feature's centroid.
+My one rule here: we never measure in degrees. If the source CRS is projected and good for
+measuring, I use it as it is. Anything geographic, or a projection that badly distorts area or
+length (Web Mercator for example), gets measured in the UTM zone of the feature's centroid.
 """
 
 from dataclasses import dataclass
@@ -13,8 +13,8 @@ import shapely
 from pyproj import CRS, Transformer
 from shapely.geometry.base import BaseGeometry
 
-WGS84 = CRS.from_epsg(4326)  # one shared object, so the identity caches hit
-# Projections that are "projected" in name only for measuring purposes.
+WGS84 = CRS.from_epsg(4326)  # I share one object so the id-based caches below get hits
+# These are technically projected, but they're useless for measuring, so I treat them like geographic.
 _UNFIT_METHODS = ("Popular Visualisation Pseudo Mercator", "Mercator", "Equidistant Cylindrical", "Miller")
 
 
@@ -30,18 +30,18 @@ class CRSInfo:
 
 
 def _per_object(fn):
-    """Cache fn(crs) by object identity. CRS lookups (to_epsg, to_wkt) cost ~1 ms each and would
-    otherwise run once per feature; a file's features share a handful of CRS objects."""
+    """Caches fn(crs) by object id. CRS lookups like to_epsg and to_wkt take about 1 ms each, and without
+    this they'd run once per feature. A file's features only share a handful of CRS objects anyway."""
     cache: dict[int, tuple] = {}
 
     def wrapper(crs):
         hit = cache.get(id(crs))
         if hit is not None and hit[0] is crs:
             return hit[1]
-        if len(cache) > 512:  # bounded: objects from finished uploads are dropped wholesale
+        if len(cache) > 512:  # keep it small, I just throw away everything from older uploads
             cache.clear()
         value = fn(crs)
-        cache[id(crs)] = (crs, value)  # holding crs keeps its id from being reused while cached
+        cache[id(crs)] = (crs, value)  # I hold on to crs so Python can't reuse its id while it's in the cache
         return value
     return wrapper
 
@@ -58,7 +58,7 @@ def describe(crs: CRS) -> CRSInfo:
 
 @_per_object
 def is_supported(crs: CRS) -> bool:
-    """Geographic or projected 2D CRSs only; geocentric, engineering or vertical CRSs are refused."""
+    """We only accept 2D geographic or projected CRSs. Geocentric, engineering and vertical ones get refused."""
     return (crs.is_geographic or crs.is_projected) and not crs.is_geocentric
 
 
@@ -82,9 +82,9 @@ def _epsg(code: int) -> CRS:
 
 
 def utm_crs(lon: float, lat: float) -> CRS:
-    # ponytail: plain 6° zones; ignores the Norway/Svalbard exceptions and splits features
-    # that straddle a zone edge into one zone. Fine for parcel-scale data; continental extents
-    # would want an equal-area CRS (e.g. EPSG:6933) instead.
+    # I kept this to plain 6° zones on purpose. It ignores the Norway/Svalbard exceptions, and a feature
+    # sitting across a zone edge just goes into one zone. That's fine for parcels, but if we ever get
+    # continent-sized data we should switch to an equal-area CRS like EPSG:6933.
     if lat >= 84:
         return _epsg(32661)  # UPS North
     if lat <= -80:

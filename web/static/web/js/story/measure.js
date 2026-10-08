@@ -1,5 +1,5 @@
-// 07 Measure: the parcel in projected metres (real UTM vertices), dimension lines with their real
-// extents, and the area counting up to the value the backend stored.
+// 07 Measure. The parcel in projected metres (real UTM vertices), dimension lines with their real
+// lengths, and the area counting up to the value the backend saved.
 import { C, drawable, el, fitter, fmt, fmtM, makeStage, paperGrid, ringPath, text } from './stage.js'
 
 export default function measure({ section, stage, tl, data }) {
