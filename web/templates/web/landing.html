@@ -1,0 +1,192 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}GEO/MEASURE · Spatial data, measured.{% endblock %}
+{% block head %}
+{% if story %}
+<script src="{% static 'web/vendor/gsap/gsap.min.js' %}" defer></script>
+<script src="{% static 'web/vendor/gsap/ScrollTrigger.min.js' %}" defer></script>
+{% endif %}
+{% endblock %}
+{% block content %}
+{% if story %}
+{{ story|json_script:"story-data" }}
+<div class="story" id="story">
+
+  {# 01 — Hero #}
+  <section class="scene hero" data-scene="hero" aria-labelledby="s1">
+    <div class="scene__pin">
+      <div>
+        <p class="scene__index">01 / GEO·MEASURE</p>
+        <h1 class="scene__title" id="s1">Spatial data<br><em>measured.</em></h1>
+        <div class="hero__flow" aria-label="KML or Shapefile, then geometry, then CRS, then measurement">
+          <span>KML / SHAPEFILE</span><span class="arrow">→</span><span>GEOMETRY</span><span class="arrow">→</span><span>CRS</span><span class="arrow">→</span><span>MEASUREMENT</span>
+        </div>
+        <p class="scene__body">Scroll to follow one real file through the backend. Every number below was produced by the same pipeline your uploads go through.</p>
+        <p class="label hero__scroll">Scroll ↓ · or <a href="#workspace">skip to upload</a></p>
+      </div>
+      <div class="scene__stage" data-stage aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {# 02 — File #}
+  <section class="scene" data-scene="file" aria-labelledby="s2">
+    <div class="scene__pin">
+      <div>
+        <p class="scene__index">02 / FILE</p>
+        <h2 class="scene__title" id="s2">It starts as<br>a file.</h2>
+        <p class="scene__body"><strong>{{ story.survey.filename }}</strong> is a ZIP. A Shapefile is never one file: geometry, index, attributes and projection live side by side. Every member's path is checked before anything is written, and only Shapefile components are extracted.</p>
+        <dl class="scene__facts">
+          <div><dt>Archive</dt><dd>{{ story.survey.filename }} · {{ story.survey.size }} B</dd></div>
+          <div><dt>Components</dt><dd>{{ story.survey.components|length }} extracted</dd></div>
+        </dl>
+      </div>
+      <div class="scene__stage" data-stage aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {# 03 — Geometry #}
+  <section class="scene" data-scene="geometry" aria-labelledby="s3">
+    <div class="scene__pin">
+      <div>
+        <p class="scene__index">03 / GEOMETRY</p>
+        <h2 class="scene__title" id="s3">A file is not<br>the geometry.</h2>
+        <p class="scene__body">The reader turns bytes into features. This one is a <strong>Polygon</strong> with {{ story.survey.vertices|length }} vertices: points first, then edges, then a closed ring.</p>
+      </div>
+      <div class="scene__stage" data-stage aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {# 04 — Coordinates #}
+  <section class="scene" data-scene="coordinates" aria-labelledby="s4">
+    <div class="scene__pin">
+      <div>
+        <p class="scene__index">04 / COORDINATES</p>
+        <h2 class="scene__title" id="s4">Every vertex<br>has a position.</h2>
+        <p class="scene__body">Positions are stored as longitude and latitude in <strong>{{ story.survey.source_crs.code }}</strong> ({{ story.survey.source_crs.name }}), read from the <code>.prj</code>.</p>
+        <dl class="scene__facts" data-coord-facts></dl>
+      </div>
+      <div class="scene__stage" data-stage aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {# 05 — CRS problem #}
+  <section class="scene" data-scene="problem" aria-labelledby="s5">
+    <div class="scene__pin">
+      <div>
+        <p class="scene__index">05 / CRS</p>
+        <h2 class="scene__title" id="s5">Degrees are<br><em>not metres.</em></h2>
+        <p class="scene__body">{{ story.survey.source_crs.code }} is <strong>{{ story.survey.source_crs.type }}</strong>: its units are angles. A degree of longitude shrinks with latitude, so planar area or distance computed from these numbers is meaningless.</p>
+        <dl class="scene__facts">
+          <div><dt>CRS</dt><dd>{{ story.survey.source_crs.code }} · {{ story.survey.source_crs.name }}</dd></div>
+          <div><dt>Naive area</dt><dd data-deg-area></dd></div>
+        </dl>
+      </div>
+      <div class="scene__stage" data-stage aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {# 06 — CRS transformation #}
+  <section class="scene" data-scene="transform" aria-labelledby="s6">
+    <div class="scene__pin">
+      <div>
+        <p class="scene__index">06 / TRANSFORM</p>
+        <h2 class="scene__title" id="s6">Transform<br>the space.</h2>
+        <p class="scene__body">The parcel's centroid falls in <strong>{{ story.survey.measurement_crs_name }}</strong>. The grid you see is the real graticule around that zone, reprojected by PyProj: meridians bend, the data keeps its shape.</p>
+        <dl class="scene__facts">
+          <div><dt>From</dt><dd>{{ story.survey.source_crs.code }} · degrees</dd></div>
+          <div><dt>To</dt><dd>{{ story.survey.measurement_crs }} · metres</dd></div>
+          <div><dt>Vertex 1</dt><dd data-vertex-one></dd></div>
+        </dl>
+      </div>
+      <div class="scene__stage" data-stage aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {# 07 — Measurement #}
+  <section class="scene" data-scene="measure" aria-labelledby="s7">
+    <div class="scene__pin">
+      <div>
+        <p class="scene__index">07 / MEASURE</p>
+        <h2 class="scene__title" id="s7">Now we can<br>measure.</h2>
+        <p class="scene__body">Planar area in {{ story.survey.measurement_crs }}, checked against the WGS 84 ellipsoid.</p>
+        <div class="tally" style="grid-template-columns:repeat(2,auto)">
+          <div><p class="label">Area</p><b class="num" data-area>0 ha</b><span class="mono muted" style="font-size:12px" data-area-m2></span></div>
+          {% if story.line %}<div><p class="label">Length · {{ story.line.name }}</p><b class="num" data-length>0 m</b><span class="mono muted" style="font-size:12px">line.kml</span></div>{% endif %}
+        </div>
+        <p class="mono muted" style="margin-top:12px;font-size:12px" data-geodesic></p>
+      </div>
+      <div class="scene__stage" data-stage aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {# 08 — Many features #}
+  <section class="scene" data-scene="features" aria-labelledby="s8">
+    <div class="scene__pin">
+      <div>
+        <p class="scene__index">08 / FEATURES</p>
+        <h2 class="scene__title" id="s8">One file.<br>Many features.</h2>
+        <p class="scene__body"><strong>{{ story.parcels.filename }}</strong> holds {{ story.parcels.feature_count }} parcels. Each one is validated, reprojected and measured on its own.</p>
+        <div class="tally" data-tally>
+          <div><b class="num">{{ story.parcels.feature_count }}</b><span class="label">Features</span></div>
+          <div><b class="num ok">{{ story.parcels.successful }}</b><span class="label">Success</span></div>
+          <div><b class="num bad">{{ story.parcels.failed }}</b><span class="label">Failed</span></div>
+        </div>
+      </div>
+      <div class="scene__stage" data-stage aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {# 09 — Failure isolation #}
+  <section class="scene" data-scene="failure" aria-labelledby="s9">
+    <div class="scene__pin">
+      <div>
+        <p class="scene__index">09 / ISOLATION</p>
+        <h2 class="scene__title" id="s9">One bad feature<br>should not break<br>the file.</h2>
+        <p class="scene__body">Each feature's steps run in their own error boundary. A self-intersecting parcel fails with an explanation; its neighbours are measured as usual and the file completes <strong>with errors</strong>, not as a failure.</p>
+      </div>
+      <div class="scene__stage" data-stage aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {# 10 — Into the workspace #}
+  <section class="scene" data-scene="workspace" aria-labelledby="s10">
+    <div class="scene__pin">
+      <div>
+        <p class="scene__index">10 / WORKSPACE</p>
+        <h2 class="scene__title" id="s10">Now it's<br>your file.</h2>
+        <p class="scene__body">The same pieces make up the real workspace: map, measurements, CRS, status and the feature explorer.</p>
+      </div>
+      <div class="scene__stage" data-stage aria-hidden="true"></div>
+    </div>
+  </section>
+</div>
+{% endif %}
+
+<section id="workspace" class="story-end" aria-labelledby="ws-h">
+  <p class="label">Workspace</p>
+  <h2 id="ws-h">Upload spatial data.</h2>
+  <p class="muted" style="margin-top:8px">A <code>.kml</code> or a <code>.zip</code> with a Shapefile. You'll see the real processing stages, then the results.</p>
+  <div style="margin-top:22px">{% include "web/_dropzone.html" %}</div>
+  {% if story %}
+  <p class="label" style="margin-top:22px">Or open the results used above</p>
+  <div class="samples">
+    <a class="btn" href="{% url 'web:file_detail' story.survey.file_id %}">{{ story.survey.filename }}</a>
+    <a class="btn" href="{% url 'web:file_detail' story.parcels.file_id %}">{{ story.parcels.filename }}</a>
+  </div>
+  {% endif %}
+</section>
+
+<section class="api-strip" aria-labelledby="api-h">
+  <p class="label">API</p>
+  <h2 id="api-h" style="margin-top:8px;font-size:24px;font-weight:600">Three endpoints.</h2>
+  <ul>
+    <li><span class="method method--post">POST</span><code class="mono">/api/files/</code><p>Upload a KML or zipped Shapefile; processed synchronously.</p></li>
+    <li><span class="method">GET</span><code class="mono">/api/files/{id}/</code><p>File information: format, CRS, counts, stages.</p></li>
+    <li><span class="method">GET</span><code class="mono">/api/files/{id}/measurements/</code><p>Per-feature area, length, CRS, properties and errors.</p></li>
+  </ul>
+  <p style="margin-top:14px"><a class="btn" href="{% url 'web:api_docs' %}">API reference</a> <a class="btn" href="{% url 'swagger' %}">Swagger</a></p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script type="module" src="{% static 'web/js/upload.js' %}"></script>
+{% if story %}<script type="module" src="{% static 'web/js/story/index.js' %}"></script>{% endif %}
+{% endblock %}

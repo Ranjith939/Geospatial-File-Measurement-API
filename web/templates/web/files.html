@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Files · GEO/MEASURE{% endblock %}
+{% block content %}
+<div class="page page--narrow">
+  <p class="label">Uploads</p>
+  <h1 style="margin-top:4px;font-size:24px;font-weight:600;letter-spacing:-.01em">Files</h1>
+  <div style="margin-top:20px">{% include "web/_dropzone.html" %}</div>
+  <div class="panel" style="margin-top:20px">
+    {% if files %}
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th scope="col">ID</th><th scope="col">File</th><th scope="col">Type</th><th scope="col">Features</th><th scope="col">Success</th><th scope="col">Failed</th><th scope="col">Status</th><th scope="col">Uploaded (UTC)</th></tr></thead>
+        <tbody>
+        {% for f in files %}
+          <tr onclick="location.href='{% url 'web:file_detail' f.id %}'">
+            <td class="mono muted">{{ f.id }}</td>
+            <td><a href="{% url 'web:file_detail' f.id %}" style="font-weight:500">{{ f.original_filename }}</a></td>
+            <td class="mono">{{ f.file_type }}</td>
+            <td class="mono num">{{ f.feature_count }}</td>
+            <td class="mono num">{{ f.successful_count }}</td>
+            <td class="mono num">{{ f.failed_count }}</td>
+            <td><span class="badge badge--{{ f.status }}">{{ f.get_status_display }}</span></td>
+            <td class="muted">{{ f.created_at|date:"Y-m-d H:i" }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="panel__body muted">No files yet. Upload one above, or try a sample from <code>sample-data/</code>.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script type="module" src="{% static 'web/js/upload.js' %}"></script>{% endblock %}

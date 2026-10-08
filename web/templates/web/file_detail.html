@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}File {{ file_id }} · GEO/MEASURE{% endblock %}
+{% block content %}
+<div class="page" id="workspace" data-file-id="{{ file_id }}">
+  <p class="label" role="status" data-loading>Loading file…</p>
+</div>
+{% endblock %}
+{% block scripts %}<script type="module" src="{% static 'web/js/workspace.js' %}"></script>{% endblock %}

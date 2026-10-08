@@ -1,0 +1,56 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}GEO/MEASURE{% endblock %}</title>
+<meta name="description" content="GEO/MEASURE — upload KML or zipped Shapefiles, inspect features and CRS, and get projected area and length measurements.">
+<link rel="icon" type="image/svg+xml" href="{% static 'web/favicon.svg' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="{% static 'web/css/app.css' %}">
+{# Three.js is only fetched when the 2.5D inspector is opened (dynamic import in inspector.js). #}
+<script type="importmap">
+{
+  "imports": {
+    "three": "{% static 'web/vendor/three/build/three.module.js' %}",
+    "three/addons/loaders/GLTFLoader.js": "{% static 'web/vendor/three/addons/loaders/GLTFLoader.js' %}",
+    "three/addons/controls/OrbitControls.js": "{% static 'web/vendor/three/addons/controls/OrbitControls.js' %}"
+  }
+}
+</script>
+<script>window.GEOMEASURE = { modelUrl: "{% static 'web/models/inspector_stack.glb' %}" };</script>
+{% block head %}{% endblock %}
+</head>
+<body class="grid-paper">
+<a class="skip-link" href="#main">Skip to main content</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4m0 0L7.5 8.5M12 4l4.5 4.5M5 15v4h14v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5zM3 12.5l9 5 9-5M3 16.5l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5L2.8 19.5h18.4L12 3.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4.2M12 17v.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" fill="currentColor"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="{% url 'web:landing' %}">GEO<b>/</b>MEASURE</a>
+    <nav class="nav" aria-label="Main">
+      {% url 'web:landing' as landing_url %}{% url 'web:files' as files_url %}{% url 'web:api_docs' as docs_url %}
+      <a href="{{ landing_url }}#workspace">Upload</a>
+      <a href="{{ files_url }}" {% if request.path == files_url %}aria-current="page"{% endif %}>Files</a>
+      <a href="{{ docs_url }}" {% if request.path == docs_url %}aria-current="page"{% endif %}>API</a>
+      <a href="{% url 'swagger' %}">Swagger</a>
+    </nav>
+  </div>
+</header>
+<main id="main">{% block content %}{% endblock %}</main>
+{% block scripts %}{% endblock %}
+</body>
+</html>

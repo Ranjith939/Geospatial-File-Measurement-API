@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Points</name><Placemark id="bm-1"><name>Survey Marker</name><ExtendedData><Data name="type"><value>benchmark</value></Data></ExtendedData><Point><coordinates>77.553102031,12.941144732,0</coordinates></Point></Placemark></Document></kml>

@@ -1,0 +1,24 @@
+{# Upload control. upload.js turns [data-upload] into a working dropzone that posts to /api/files/. #}
+<div data-upload>
+  <div class="dropzone" data-drop>
+    <span class="corner corner--tr" aria-hidden="true"></span><span class="corner corner--bl" aria-hidden="true"></span>
+    <svg class="dropzone__mark" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M32 6 L58 32 L32 58 L6 32 Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M32 18 L46 32 L32 46 L18 32 Z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="32" cy="32" r="2" fill="currentColor"/>
+    </svg>
+    <p class="dropzone__title">Drop a KML or ZIP here</p>
+    <button type="button" class="btn btn--primary" data-browse><svg><use href="#i-upload"/></svg>Browse files</button>
+    <p class="label">KML · zipped Shapefile · up to 50 MB</p>
+    <input type="file" accept=".kml,.zip" class="sr-only" aria-label="Choose a KML or zipped Shapefile" data-input>
+  </div>
+  <div class="panel upload-card" data-card hidden role="status" aria-live="polite">
+    <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--primary)"><path d="M6 3h8l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M14 3v4h4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+    <div style="min-width:0;flex:1">
+      <p data-card-name style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></p>
+      <p class="label" data-card-meta></p>
+      <div class="upload-card__bar"><span></span></div>
+    </div>
+  </div>
+  <div data-error style="margin-top:16px"></div>
+</div>

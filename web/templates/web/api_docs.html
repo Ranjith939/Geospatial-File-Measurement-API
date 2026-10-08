@@ -1,0 +1,165 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}API reference · GEO/MEASURE{% endblock %}
+{% block content %}
+<div class="page page--narrow">
+  <p class="label">API reference</p>
+  <h1 style="margin-top:4px;font-size:26px;font-weight:600;letter-spacing:-.01em">GeoMeasure REST API</h1>
+  <p class="muted" style="margin-top:8px;max-width:640px">
+    All errors share one shape: <code class="mono" style="color:var(--ink);font-size:13px">{"error": {"code", "message", "details"}}</code>.
+    Stack traces are never returned.
+  </p>
+  <p style="margin-top:10px"><a href="{% url 'swagger' %}" style="color:var(--primary);text-underline-offset:4px">Swagger UI</a> · <a href="{% url 'schema' %}?format=json" style="color:var(--primary);text-underline-offset:4px">OpenAPI schema</a></p>
+
+  <div style="margin-top:28px">
+    <section class="panel endpoint" aria-labelledby="ep-post">
+      <span class="method method--post">POST</span><code class="endpoint__path" id="ep-post">/api/files/</code>
+      <h2 style="margin-top:12px;font-size:16px;font-weight:500">Upload a geospatial file</h2>
+      <p style="margin-top:4px;font-size:14px">Accepts <code>.kml</code> or a <code>.zip</code> containing a Shapefile (<code>.shp</code>, <code>.shx</code>, <code>.dbf</code>, optional <code>.prj</code>). Validation, extraction, CRS detection, reprojection and measurement run synchronously; the response carries the final status.</p>
+      <div class="endpoint__cols">
+        <div>
+          <p class="label">Headers</p><p class="mono" style="font-size:12.5px">Content-Type: multipart/form-data</p>
+          <p class="label" style="margin-top:12px">Parameters</p>
+          <table class="params"><tr><td class="mono">file</td><td class="muted">form field · required</td><td>KML or ZIP, max 50 MB (configurable)</td></tr></table>
+          <p class="label" style="margin-top:12px">Error responses</p>
+          <table class="params">
+            <tr><td class="mono bad">400</td><td class="mono">NO_FILE, EMPTY_FILE</td></tr>
+            <tr><td class="mono bad">413</td><td class="mono">FILE_TOO_LARGE</td></tr>
+            <tr><td class="mono bad">415</td><td class="mono">UNSUPPORTED_FILE_TYPE</td></tr>
+            <tr><td class="mono bad">422</td><td class="mono">INVALID_KML, CORRUPT_ARCHIVE, EMPTY_ARCHIVE, UNSAFE_ARCHIVE, INVALID_SHAPEFILE</td></tr>
+          </table>
+          <p class="label" style="margin-top:12px">Request</p>
+          <pre class="code code--light">curl -F "file=@sample-data/survey.zip" {{ request.scheme }}://{{ request.get_host }}/api/files/</pre>
+        </div>
+        <div>
+          <p class="label">Example response · 201</p>
+<pre class="code">{
+  "id": 42,
+  "filename": "survey.zip",
+  "file_type": "SHAPEFILE",
+  "format": "ESRI Shapefile",
+  "status": "completed",
+  "crs": "EPSG:4326",
+  "measurement_crs": ["EPSG:32643"],
+  "feature_count": 1, "successful_count": 1, "failed_count": 0,
+  "components": [{"name": "survey.shp", "size": 284}, "…"],
+  "stages": [{"stage": "validating", "status": "done", "duration_ms": 2.1}, "…"]
+}</pre>
+          <p class="label" style="margin-top:12px">Example error · 422</p>
+<pre class="code">{"error": {"code": "INVALID_SHAPEFILE",
+  "message": "The uploaded ZIP does not contain a valid Shapefile structure.",
+  "details": {"expected": [".shp", ".shx", ".dbf"],
+              "missing": {"parcels/parcels": [".shx"]}}}}</pre>
+        </div>
+      </div>
+      <div class="try" data-try="post" style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+        <p class="label">Try request</p>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input type="file" accept=".kml,.zip" aria-label="File to upload" data-try-file>
+          <button class="btn btn--primary" type="button" data-try-send disabled><svg><use href="#i-play"/></svg>Send</button>
+        </div>
+        <pre class="code" data-try-out hidden></pre>
+      </div>
+    </section>
+
+    <section class="panel endpoint" aria-labelledby="ep-get">
+      <span class="method">GET</span><code class="endpoint__path" id="ep-get">/api/files/{id}/</code>
+      <h2 style="margin-top:12px;font-size:16px;font-weight:500">Retrieve file information</h2>
+      <p style="margin-top:4px;font-size:14px">Format, size, status, source and measurement CRS, feature counts, layers, archive components, WGS84 bounds, totals and per-stage timings.</p>
+      <div class="endpoint__cols">
+        <div>
+          <p class="label">Parameters</p>
+          <table class="params"><tr><td class="mono">id</td><td class="muted">path · required</td><td>File id returned by the upload</td></tr></table>
+          <p class="label" style="margin-top:12px">Error responses</p>
+          <table class="params"><tr><td class="mono bad">404</td><td class="mono">FILE_NOT_FOUND</td></tr></table>
+          <p class="label" style="margin-top:12px">Request</p>
+          <pre class="code code--light">curl {{ request.scheme }}://{{ request.get_host }}/api/files/42/</pre>
+        </div>
+        <div>
+          <p class="label">Example response · 200</p>
+<pre class="code">{
+  "id": 42, "filename": "land_parcels.zip", "file_type": "SHAPEFILE",
+  "status": "completed_with_errors", "crs": "EPSG:4326",
+  "source_crs": {"code": "EPSG:4326", "name": "WGS 84", "type": "geographic", "units": "degree"},
+  "measurement_crs": ["EPSG:32643"],
+  "feature_count": 198, "successful_count": 196, "failed_count": 2,
+  "totals": {"area_m2": 12799799.0, "area_ha": 1279.9799, "length_m": 0.0, "…": "…"}
+}</pre>
+        </div>
+      </div>
+      <div class="try" data-try="get" data-path="/api/files/{id}/" style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+        <p class="label">Try request</p>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center"><label class="mono" style="font-size:13px">id <input data-try-id value="1" inputmode="numeric" style="width:80px;border:1px solid var(--line);padding:4px 6px"></label>
+          <button class="btn btn--primary" type="button" data-try-send><svg><use href="#i-play"/></svg>Send</button></div>
+        <pre class="code" data-try-out hidden></pre>
+      </div>
+    </section>
+
+    <section class="panel endpoint" aria-labelledby="ep-m">
+      <span class="method">GET</span><code class="endpoint__path" id="ep-m">/api/files/{id}/measurements/</code>
+      <h2 style="margin-top:12px;font-size:16px;font-weight:500">Retrieve measurements</h2>
+      <p style="margin-top:4px;font-size:14px">One entry per feature. Polygons carry area, lines carry length, points report <code>measurement_status: "not_required"</code>. Failed and unsupported features keep their geometry and properties and carry an error code.</p>
+      <div class="endpoint__cols">
+        <div>
+          <p class="label">Parameters</p>
+          <table class="params">
+            <tr><td class="mono">id</td><td class="muted">path · required</td><td>File id</td></tr>
+            <tr><td class="mono">status</td><td class="muted">query · optional</td><td>success · failed · unsupported</td></tr>
+            <tr><td class="mono">include_geometry</td><td class="muted">query · optional</td><td>true (default) · false</td></tr>
+          </table>
+          <p class="label" style="margin-top:12px">Error responses</p>
+          <table class="params"><tr><td class="mono bad">404</td><td class="mono">FILE_NOT_FOUND</td></tr><tr><td class="mono bad">422</td><td class="mono">INVALID_REQUEST</td></tr></table>
+          <p class="label" style="margin-top:12px">Request</p>
+          <pre class="code code--light">curl "{{ request.scheme }}://{{ request.get_host }}/api/files/42/measurements/?status=failed"</pre>
+        </div>
+        <div>
+          <p class="label">Example response · 200</p>
+<pre class="code">{
+  "file_id": 42, "status": "completed_with_errors", "crs": "EPSG:4326",
+  "feature_count": 198, "successful": 196, "failed": 2,
+  "features": [
+    {"feature_id": 1, "geometry_type": "Polygon", "status": "success",
+     "measurement_status": "measured", "measurement_type": "area",
+     "value": 22500.0, "unit": "m²",
+     "source_crs": "EPSG:4326", "measurement_crs": "EPSG:32643",
+     "measurement": {"area_m2": 22500.0, "area_ha": 2.25,
+                     "geodesic_value": 22475.278, "method": "planar"}},
+    {"feature_id": 83, "geometry_type": "Polygon", "status": "failed",
+     "measurement": null, "error_code": "INVALID_GEOMETRY",
+     "error": "Invalid geometry: Self-intersection[…]"}
+  ]
+}</pre>
+        </div>
+      </div>
+      <div class="try" data-try="get" data-path="/api/files/{id}/measurements/?include_geometry=false" style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+        <p class="label">Try request</p>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center"><label class="mono" style="font-size:13px">id <input data-try-id value="1" inputmode="numeric" style="width:80px;border:1px solid var(--line);padding:4px 6px"></label>
+          <button class="btn btn--primary" type="button" data-try-send><svg><use href="#i-play"/></svg>Send</button></div>
+        <pre class="code" data-try-out hidden></pre>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script type="module">
+  import { api, request } from "{% static 'web/js/api.js' %}"
+  for (const box of document.querySelectorAll('[data-try]')) {
+    const out = box.querySelector('[data-try-out]'), send = box.querySelector('[data-try-send]')
+    const file = box.querySelector('[data-try-file]'), id = box.querySelector('[data-try-id]')
+    file?.addEventListener('change', () => { send.disabled = !file.files.length })
+    id?.addEventListener('input', () => { id.value = id.value.replace(/\D/g, '') })
+    send.addEventListener('click', async () => {
+      send.disabled = true
+      let body
+      try {
+        body = box.dataset.try === 'post' ? await api.upload(file.files[0]) : await request(box.dataset.path.replace('{id}', encodeURIComponent(id.value || '0')))
+      } catch (e) {
+        body = { status: e.status, error: { code: e.code, message: e.message, details: e.details } }
+      }
+      out.hidden = false
+      out.textContent = JSON.stringify(body, (k, v) => (k === 'geometry' && v ? { type: v.type, coordinates: '…' } : v), 2)
+      send.disabled = box.dataset.try === 'post' && !file.files.length
+    })
+  }
+</script>
+{% endblock %}

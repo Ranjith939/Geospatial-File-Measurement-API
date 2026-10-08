@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: geomeasure
+      POSTGRES_USER: geomeasure
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U geomeasure"]
+      interval: 3s
+      retries: 20
+
+  web:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://geomeasure:${POSTGRES_PASSWORD}@db:5432/geomeasure
+      DEBUG: "False"
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+    volumes: [media:/data/media]
+    depends_on:
+      db: { condition: service_healthy }
+    ports: ["8000:8000"]
+
+volumes:
+  pgdata:
+  media:

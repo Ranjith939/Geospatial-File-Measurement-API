@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Lines</name><Placemark id="road-1"><name>Service Road</name><ExtendedData><Data name="surface"><value>asphalt</value></Data><Data name="lanes"><value>2</value></Data></ExtendedData><LineString><coordinates>77.553009010,12.941055297,0 77.558535115,12.941001115,0 77.558608871,12.948228063,0</coordinates></LineString></Placemark></Document></kml>
