@@ -55,7 +55,9 @@ def extract_shapefiles(zip_path: Path, dest: Path) -> tuple[list[Path], list[str
             raise ValidationFailed(
                 "INVALID_SHAPEFILE",
                 "The uploaded ZIP does not contain a valid Shapefile structure.",
-                {"expected": list(REQUIRED), "missing": incomplete},
+                # "found" tells the user what they actually sent, e.g. a GeoJSON zipped by mistake.
+                {"expected": list(REQUIRED), "missing": incomplete,
+                 "found": [i.filename for i in infos if not i.is_dir() and "__MACOSX" not in i.filename][:20]},
             )
 
         dest = dest.resolve()

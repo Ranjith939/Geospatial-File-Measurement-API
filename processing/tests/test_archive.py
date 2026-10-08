@@ -35,8 +35,9 @@ def test_empty_zip(upload):
 
 
 def test_zip_without_shapefile(upload):
-    r = upload("docs.zip", make_zip({"readme.txt": b"hello", "run.exe": b"MZ"}))
+    r = upload("docs.zip", make_zip({"park.geojson": b"{}", "readme.txt": b"hello"}))
     assert r.status_code == 422 and code(r) == "INVALID_SHAPEFILE"
+    assert r.json()["error"]["details"]["found"] == ["park.geojson", "readme.txt"]  # says what was sent
 
 
 def test_missing_shapefile_component(upload):

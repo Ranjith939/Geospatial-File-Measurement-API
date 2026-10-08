@@ -32,6 +32,8 @@ export function errorState({ code, message, details = {}, tone = 'error', action
         h('p.label', { text: 'Expected' }), h('ul', {}, details.expected.map((e) => h('li', { text: e })))),
       missing.length > 0 && h('div', { style: 'margin-top:10px' },
         h('p.label', { text: 'Missing' }), h('ul', {}, missing.map(([s, e]) => h('li', { text: `${s}: ${e.join(', ')}` })))),
+      details.found?.length > 0 && missing.length === 0 && h('div', { style: 'margin-top:10px' },
+        h('p.label', { text: 'Found in the archive' }), h('ul', {}, details.found.map((n) => h('li', { text: n })))),
       details.reason && h('p.mono.muted', { style: 'margin-top:8px;font-size:12px;overflow-wrap:anywhere', text: details.reason }),
       actions.length > 0 && h('div.actions', {}, actions),
     )))
