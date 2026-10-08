@@ -18,16 +18,16 @@
       <div class="endpoint__cols">
         <div>
           <p class="label">Headers</p><p class="mono" style="font-size:12.5px">Content-Type: multipart/form-data</p>
-          <p class="label" style="margin-top:12px">Parameters</p>
+          <p class="label">Parameters</p>
           <table class="params"><tr><td class="mono">file</td><td class="muted">form field · required</td><td>KML or ZIP, max 50 MB (configurable)</td></tr></table>
-          <p class="label" style="margin-top:12px">Error responses</p>
-          <table class="params">
+          <p class="label">Error responses</p>
+          <table class="params params--codes">
             <tr><td class="mono bad">400</td><td class="mono">NO_FILE, EMPTY_FILE</td></tr>
             <tr><td class="mono bad">413</td><td class="mono">FILE_TOO_LARGE</td></tr>
             <tr><td class="mono bad">415</td><td class="mono">UNSUPPORTED_FILE_TYPE</td></tr>
             <tr><td class="mono bad">422</td><td class="mono">INVALID_KML, CORRUPT_ARCHIVE, EMPTY_ARCHIVE, UNSAFE_ARCHIVE, INVALID_SHAPEFILE</td></tr>
           </table>
-          <p class="label" style="margin-top:12px">Request</p>
+          <p class="label">Request</p>
           <pre class="code code--light">curl -F "file=@sample-data/survey.zip" {{ request.scheme }}://{{ request.get_host }}/api/files/</pre>
         </div>
         <div>
@@ -44,16 +44,16 @@
   "components": [{"name": "survey.shp", "size": 284}, "…"],
   "stages": [{"stage": "validating", "status": "done", "duration_ms": 2.1}, "…"]
 }</pre>
-          <p class="label" style="margin-top:12px">Example error · 422</p>
+          <p class="label">Example error · 422</p>
 <pre class="code">{"error": {"code": "INVALID_SHAPEFILE",
   "message": "The uploaded ZIP does not contain a valid Shapefile structure.",
   "details": {"expected": [".shp", ".shx", ".dbf"],
               "missing": {"parcels/parcels": [".shx"]}}}}</pre>
         </div>
       </div>
-      <div class="try" data-try="post" style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+      <div class="try" data-try="post">
         <p class="label">Try request</p>
-        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div class="try__row">
           <input type="file" accept=".kml,.zip" aria-label="File to upload" data-try-file>
           <button class="btn btn--primary" type="button" data-try-send disabled><svg><use href="#i-play"/></svg>Send</button>
         </div>
@@ -69,9 +69,9 @@
         <div>
           <p class="label">Parameters</p>
           <table class="params"><tr><td class="mono">id</td><td class="muted">path · required</td><td>File id returned by the upload</td></tr></table>
-          <p class="label" style="margin-top:12px">Error responses</p>
-          <table class="params"><tr><td class="mono bad">404</td><td class="mono">FILE_NOT_FOUND</td></tr></table>
-          <p class="label" style="margin-top:12px">Request</p>
+          <p class="label">Error responses</p>
+          <table class="params params--codes"><tr><td class="mono bad">404</td><td class="mono">FILE_NOT_FOUND</td></tr></table>
+          <p class="label">Request</p>
           <pre class="code code--light">curl {{ request.scheme }}://{{ request.get_host }}/api/files/42/</pre>
         </div>
         <div>
@@ -86,9 +86,9 @@
 }</pre>
         </div>
       </div>
-      <div class="try" data-try="get" data-path="/api/files/{id}/" style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+      <div class="try" data-try="get" data-path="/api/files/{id}/">
         <p class="label">Try request</p>
-        <div style="margin-top:8px;display:flex;gap:8px;align-items:center"><label class="mono" style="font-size:13px">id <input data-try-id value="1" inputmode="numeric" style="width:80px;border:1px solid var(--line);padding:4px 6px"></label>
+        <div class="try__row"><label class="mono" style="font-size:13px">id <input data-try-id value="1" inputmode="numeric" style="width:80px;border:1px solid var(--line);padding:4px 6px"></label>
           <button class="btn btn--primary" type="button" data-try-send><svg><use href="#i-play"/></svg>Send</button></div>
         <pre class="code" data-try-out hidden></pre>
       </div>
@@ -106,9 +106,9 @@
             <tr><td class="mono">status</td><td class="muted">query · optional</td><td>success · failed · unsupported</td></tr>
             <tr><td class="mono">include_geometry</td><td class="muted">query · optional</td><td>true (default) · false</td></tr>
           </table>
-          <p class="label" style="margin-top:12px">Error responses</p>
-          <table class="params"><tr><td class="mono bad">404</td><td class="mono">FILE_NOT_FOUND</td></tr><tr><td class="mono bad">422</td><td class="mono">INVALID_REQUEST</td></tr></table>
-          <p class="label" style="margin-top:12px">Request</p>
+          <p class="label">Error responses</p>
+          <table class="params params--codes"><tr><td class="mono bad">404</td><td class="mono">FILE_NOT_FOUND</td></tr><tr><td class="mono bad">422</td><td class="mono">INVALID_REQUEST</td></tr></table>
+          <p class="label">Request</p>
           <pre class="code code--light">curl "{{ request.scheme }}://{{ request.get_host }}/api/files/42/measurements/?status=failed"</pre>
         </div>
         <div>
@@ -130,9 +130,9 @@
 }</pre>
         </div>
       </div>
-      <div class="try" data-try="get" data-path="/api/files/{id}/measurements/?include_geometry=false" style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+      <div class="try" data-try="get" data-path="/api/files/{id}/measurements/?include_geometry=false">
         <p class="label">Try request</p>
-        <div style="margin-top:8px;display:flex;gap:8px;align-items:center"><label class="mono" style="font-size:13px">id <input data-try-id value="1" inputmode="numeric" style="width:80px;border:1px solid var(--line);padding:4px 6px"></label>
+        <div class="try__row"><label class="mono" style="font-size:13px">id <input data-try-id value="1" inputmode="numeric" style="width:80px;border:1px solid var(--line);padding:4px 6px"></label>
           <button class="btn btn--primary" type="button" data-try-send><svg><use href="#i-play"/></svg>Send</button></div>
         <pre class="code" data-try-out hidden></pre>
       </div>
